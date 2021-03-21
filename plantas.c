@@ -18,6 +18,7 @@
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
 {
+	
 	return NULL;
 }
 
