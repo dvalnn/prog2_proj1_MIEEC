@@ -12,6 +12,8 @@
 
 #ifndef PLANTAS_H
 #define MAX_NAME 200
+#define str(c) #c
+#define MEMORY_ALOC_ERROR_MSG "\n[FATAL] - Erro ao alocar memória.\n"
 
 /**
  * @brief registo para armazenar elementos do vetor dinamico. ||  
@@ -60,7 +62,7 @@ typedef struct colecao
  * 
  * @param ID string de 10 carateres contendo o identificador unico da planta
  * @param nome_cientifico string de MAX_NAME carateres contendo o nome cientifico da planta
- * @param alcunhas etor (de strings) contendo as possiveis alcunhas da planta; pode ser NULL caso nao existam alcunhas para a planta
+ * @param alcunhas vetor (de strings) contendo as possiveis alcunhas da planta; pode ser NULL caso nao existam alcunhas para a planta
  * @param n_alcunhas inteiro contendo o tamanho (numero de alcunhas) do vetor alcunhas
  * @param n_sementes inteiro contendo o numero de sementes da planta a guardar na colecao
  * @return retorna o apontador para a planta criada ou NULL se ocorrer algum erro ou se algum dos parametros nao estiver dentro da gama de valores valida
@@ -145,6 +147,15 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam);
  * @return int - 1 se for necessario reordenar e a reordenacao ocorrer com sucesso, 0 se nao for necessario reordenar e -1 em caso de erro
  */
 int colecao_reordena(colecao *c, const char *tipo_ordem);
+
+/**
+ * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
+ * 
+ * @param ptr pointer a verificar
+ * @param msg mensagem de erro a imprimir caso ptr seja NULL
+ * @param ptrName nome do ptr a imprimir com a mensagem de erro
+ */
+void checkPtr(void *ptr, const char *msg, const char *ptrName);
 
 #define PLANTAS_H
 #endif

@@ -17,44 +17,35 @@
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
 {
-	// planta *elemento;
-	// strcpy(elemento->ID,ID); //? ID
-	// strcpy(elemento->nome_cientifico,nome_cientifico); //? Nome cientifico
+	//validação dos argumentos passados para a função
+	if (strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0)
+	{
+		printf("\n[FATAL] - Argumentos inválidos.\n");
+		return NULL;
+	}
 
-	// elemento->n_alcunhas = n_alcunhas;	//? número de alcunhas
+	planta *novaPlanta = calloc(1, sizeof(*novaPlanta)); // aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
+	novaPlanta->alcunhas = NULL;						 // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
 
-	// //? Alcunhas
+	strcpy(novaPlanta->ID, ID);
+	strcpy(novaPlanta->nome_cientifico, nome_cientifico);
+	novaPlanta->n_sementes = n_sementes;
+	novaPlanta->n_alcunhas = n_alcunhas;
 
-	// if(elemento->alcunhas != NULL) //Existem alcunhas
-	// {
-	// 	int *aux = elemento->alcunhas;
-	// 	aux = calloc(n_alcunhas, sizeof(*aux)); //! calloc ou malloc?
+	//Não existem alcunhas - retorna nova planta com novaPlanta->alcunhas = NULL
+	if (novaPlanta->n_alcunhas == 0)
+		return novaPlanta;
 
-	// 		if (aux == NULL)
-	// 			{
-	// 				printf("\n[FATAL] - Erro ao alocar memória.\n");
-	// 				return NULL;
-	// 			}
+	novaPlanta->alcunhas = calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
 
-	// 		for(int i = 0; i < n_alcunhas;i++)
-	// 			{
-	// 				aux = elemento->alcunhas[i];
-	// 				aux = calloc(strlen(aux),sizeof(char)); //! calloc ou malloc?
+	for (int i = 0; i < novaPlanta->n_alcunhas; i++)
+	{
+		novaPlanta->alcunhas[i] = calloc(1, strlen(alcunhas[i]) + 1);
+		checkPtr(novaPlanta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(novaPlanta->alcunhas[i]));
+		strcpy(novaPlanta->alcunhas[i], alcunhas[i]);
+	}
 
-	// 					if (aux == NULL)
-	// 						{
-	// 							printf("\n[FATAL] - Erro ao alocar memória.\n");
-	// 							return NULL;
-	// 						}
-	// 				strcpy(elemento->alcunhas[i], alcunhas[i]);
-	// 			}
-	// }
-	// elemento->n_sementes = n_sementes;	//? número de sementes
-
-	// // free(aux); ????
-
-	// return elemento;
-	return NULL;
+	return novaPlanta;
 }
 
 colecao *colecao_nova(const char *tipo_ordem)
@@ -62,18 +53,14 @@ colecao *colecao_nova(const char *tipo_ordem)
 
 	if (strlen(tipo_ordem) > 4)
 	{
-		printf("\n[FATAL] - Tipo de ordenação inválido.\n");
+		printf("\n[FATAL] - Argumento inválido.\n");
 		return NULL;
 	}
 
 	colecao *newCol;
 	newCol = (colecao *)calloc(1, sizeof(*newCol));
 
-	if (newCol == NULL)
-	{
-		printf("\n[FATAL] - Erro ao alocar memória.\n");
-		return NULL;
-	}
+	checkPtr(newCol, MEMORY_ALOC_ERROR_MSG, str(newCol));
 
 	newCol->plantas = NULL;
 	newCol->tamanho = 0;
@@ -104,7 +91,15 @@ planta *planta_remove(colecao *c, const char *nomep)
 
 int planta_apaga(planta *p)
 {
-	return -1;
+	// if (p = NULL)
+	// 	return -1;
+	// //IMCOMPLETO -- NECESSITA DE REVISÃO
+	// for (int i = 0; i < p->n_alcunhas; i++)
+	// 	free(p->alcunhas[i]);
+	// free(p->alcunhas);
+	// free(p);
+
+	return -1;	
 }
 
 int colecao_apaga(colecao *c)
@@ -124,4 +119,14 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
 	return -1;
+}
+
+void checkPtr(void *ptr, const char *msg, const char *ptrName)
+{
+	if (ptr == NULL)
+	{
+		printf("%s", msg);
+		printf("\n[INFO] - Erro originado por: \"%s\"\n", ptrName);
+		exit(0);
+	}
 }
