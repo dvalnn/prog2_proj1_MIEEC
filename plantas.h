@@ -21,19 +21,19 @@
  */
 typedef struct planta
 {
-  /** identificacao unica no catalogo **/
+  /** identificacao unica no catalogo */
   char ID[10];
 
   /** designacao cientifica */
   char nome_cientifico[MAX_NAME];
 
-  /** lista de nomes locais correntes dados a especie **/
+  /** lista de nomes locais correntes dados a especie */
   char **alcunhas;
 
-  /** numero total de alcunhas da planta **/
+  /** numero total de alcunhas da planta */
   int n_alcunhas;
 
-  /** numero de sementes guardadas no cofre **/
+  /** numero de sementes guardadas no cofre */
   int n_sementes;
 
 } planta;
