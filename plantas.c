@@ -2,10 +2,19 @@
 /*          Biblioteca plantas | PROG2 | MIEEC | 2020/21         */
 /*****************************************************************/
 
+/**
+ * @file plantas.h
+ * @author Tiago Amorim (up202004720@edu.fe.up.pt) Lucas Freitas (up202006938@edu.fe.up.pt)
+ * @brief implementação das funções da biblioteca plantas.h
+ * @date 2021-03-21
+ * 
+ */
+
 #include "plantas.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
 {
