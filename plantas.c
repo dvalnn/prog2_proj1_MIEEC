@@ -14,11 +14,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 // * útil para dar print do nome do argumento c passado
 #define str(c) #c
-
+// * útil para calcular qual a string com menor tamanho para strncmp
+#define min(a,b) a < b ? a : b
 // * mensagem de erro
 #define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Erro ao alocar memória.\n"
 /**
@@ -63,12 +63,17 @@ int colecao_pesquisa(colecao *c, const char *plantaID)
  * @return true a->ID > b->ID
  * @return false a->ID < b->ID
  */
-bool qsortKey_ID(const void *a, const void *b)
+int qsortKey_ID(const void *a, const void *b)
 {
-	planta *pa = (planta *)a;
-	planta *pb = (planta *)b;
+	const planta *pa = (planta *)a;
+	const planta *pb = (planta *)b;
 
-	return strcmp(pa->ID, pb->ID) > 0;
+	for (int i = 0; i < 9; i++){
+		if (pa->ID[i] - pb->ID[i] < 0)
+			return 1;
+	}
+	return 0;
+	// return strncmp(pa->ID, pb->ID, min(strlen(pa->ID),strlen(pb->ID))) < 0;
 }
 
 /**
@@ -79,12 +84,17 @@ bool qsortKey_ID(const void *a, const void *b)
  * @return true a->nome_cientifico > b->nome_cientifico
  * @return false a->nome_cientifico <= b->nome_cientifico
  */
-bool qsortKey_nome(const void *a, const void *b)
+int qsortKey_nome(const void *a, const void *b)
 {
-	planta *pa = (planta *)a;
-	planta *pb = (planta *)b;
+	const planta *pa = (planta *)a;
+	const planta *pb = (planta *)b;
 
-	return strcmp(pa->nome_cientifico, pb->nome_cientifico) > 0;
+	for (int i = 0; i < MAX_NAME - 1; i++){
+		if (pa->nome_cientifico[i] - pb->nome_cientifico[i] < 0)
+			return 1;
+	}
+	return 0;
+	// return strncmp(pa->nome_cientifico, pb->nome_cientifico, min(strlen(pa->nome_cientifico), strlen(pb->nome_cientifico))) < 0;
 }
 /**
  * @brief ordena a coleção usando qsort e a função key adequada
@@ -101,7 +111,7 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
 		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
 	else
 		return -1;
-	return 1;
+	return -1;
 }
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
@@ -117,7 +127,9 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	novaPlanta->alcunhas = NULL;						 // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
 
 	strcpy(novaPlanta->ID, ID);
+	// novaPlanta->ID[strlen((ID))] = '8';
 	strcpy(novaPlanta->nome_cientifico, nome_cientifico);
+	// novaPlanta->ID[strlen((nome_cientifico))] = '8';
 	novaPlanta->n_sementes = n_sementes;
 	novaPlanta->n_alcunhas = n_alcunhas;
 
@@ -161,14 +173,14 @@ colecao *colecao_nova(const char *tipo_ordem)
 
 int planta_insere(colecao *c, planta *p)
 {
-	if (p = NULL)
+	if (p == NULL)
 		return -1;
 
 	// caso especial: a coleção está vazia
 	if (c->plantas == NULL)
 	{
 		c->tamanho = 1;
-		c->plantas = calloc(1, sizeof(*p));
+		c->plantas = calloc(1, sizeof(planta *));
 
 		if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 			return -1;
@@ -188,7 +200,7 @@ int planta_insere(colecao *c, planta *p)
 	//planta nao existe, é necessário inserir na posição certa
 	//! perguntar sobre c->capacidade
 	//alocar memória para vetor com 1 elemento extra
-	c->plantas = realloc(c->plantas, c->tamanho + 1);
+	c->plantas = realloc(c->plantas, sizeof(planta *)*(c->tamanho + 1));
 	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 		return -1;
 
@@ -222,7 +234,7 @@ planta *planta_remove(colecao *c, const char *nomep)
 
 int planta_apaga(planta *p)
 {
-	// if (p = NULL)
+	// if (p == NULL)
 	// 	return -1;
 	// //IMCOMPLETO -- NECESSITA DE REVISÃO
 	// for (int i = 0; i < p->n_alcunhas; i++)
@@ -250,7 +262,10 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 
 int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
-	if (c == NULL || tipo_ordem == NULL)
+	if (c == NULL)
+		return -1;
+	
+	if (strcmp(tipo_ordem, "ID") != 0 && strcmp(tipo_ordem, "nome") != 0)
 		return -1;
 
 	if (!strcmp(tipo_ordem, c->tipo_ordem))
@@ -263,5 +278,5 @@ int colecao_reordena(colecao *c, const char *tipo_ordem)
 }
 
 //* undef dos macros criados para não passarem para os restantes ficheiros
-#undef str(c)
+#undef str
 #undef MEMORY_ALOC_ERROR_MSG
