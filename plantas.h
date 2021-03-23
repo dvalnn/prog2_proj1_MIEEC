@@ -12,8 +12,6 @@
 
 #ifndef PLANTAS_H
 #define MAX_NAME 200
-#define str(c) #c
-#define MEMORY_ALOC_ERROR_MSG "\n[FATAL] - Erro ao alocar memória.\n"
 
 /**
  * @brief registo para armazenar elementos do vetor dinamico. ||  
@@ -147,15 +145,6 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam);
  * @return int - 1 se for necessario reordenar e a reordenacao ocorrer com sucesso, 0 se nao for necessario reordenar e -1 em caso de erro
  */
 int colecao_reordena(colecao *c, const char *tipo_ordem);
-
-/**
- * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
- * 
- * @param ptr pointer a verificar
- * @param msg mensagem de erro a imprimir caso ptr seja NULL
- * @param ptrName nome do ptr a imprimir com a mensagem de erro
- */
-void checkPtr(void *ptr, const char *msg, const char *ptrName);
 
 #define PLANTAS_H
 #endif

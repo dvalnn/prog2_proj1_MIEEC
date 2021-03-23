@@ -15,12 +15,57 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// * útil para dar print do nome do argumento c passado
+#define str(c) #c
+
+// * mensagem de erro
+#define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Erro ao alocar memória.\n"
+
+/**
+ * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
+ * 
+ * @param ptr pointer a verificar
+ * @param msg mensagem de erro a imprimir caso ptr seja NULL
+ * @param ptrName nome do ptr a imprimir com a mensagem de erro
+ */
+int checkPtr(void *ptr, const char *msg, const char *ptrName)
+{
+	if (ptr == NULL)
+	{
+		printf("%s", msg);
+		printf("\n[INFO] - Erro originado por: \"%s\"\n", ptrName);
+		return 1;
+	}
+	return 0;
+}
+
+/**
+ * @brief pesquisa a posição da planta na string
+ * 
+ * @param c 
+ * @param plantaID ID da planta a pesquisar na string
+ * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
+ */
+//! melhorar caso haja tempo :) - adicionar pesquisa binária
+int colecao_pesquisa(colecao *c, const char *plantaID)
+{
+	for (int i = 0; i < c->tamanho; i++)
+		if (!strcmp(c->plantas[i]->ID, plantaID))
+			return i;
+	return -1;
+}
+
+int qsortKey(const void* c1, const void* b)
+{
+	
+}
+
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
 {
 	//validação dos argumentos passados para a função
 	if (strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0)
 	{
-		printf("\n[FATAL] - Argumentos inválidos.\n");
+		printf("\n[ERRO] - Argumentos inválidos.\n");
 		return NULL;
 	}
 
@@ -41,7 +86,8 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	for (int i = 0; i < novaPlanta->n_alcunhas; i++)
 	{
 		novaPlanta->alcunhas[i] = calloc(1, strlen(alcunhas[i]) + 1);
-		checkPtr(novaPlanta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(novaPlanta->alcunhas[i]));
+		if (checkPtr(novaPlanta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(novaPlanta->alcunhas[i])))
+			return NULL;
 		strcpy(novaPlanta->alcunhas[i], alcunhas[i]);
 	}
 
@@ -50,17 +96,17 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 
 colecao *colecao_nova(const char *tipo_ordem)
 {
-
 	if (strlen(tipo_ordem) > 4)
 	{
-		printf("\n[FATAL] - Argumento inválido.\n");
+		printf("\n[ERRO] - Argumento inválido.\n");
 		return NULL;
 	}
 
 	colecao *newCol;
 	newCol = (colecao *)calloc(1, sizeof(*newCol));
 
-	checkPtr(newCol, MEMORY_ALOC_ERROR_MSG, str(newCol));
+	if (checkPtr(newCol, MEMORY_ALOC_ERROR_MSG, str(newCol)))
+		return NULL;
 
 	newCol->plantas = NULL;
 	newCol->tamanho = 0;
@@ -71,11 +117,40 @@ colecao *colecao_nova(const char *tipo_ordem)
 
 int planta_insere(colecao *c, planta *p)
 {
-	return -1;
+	if (p = NULL)
+		return -1;
+
+	// caso especial: a coleção está vazia
+	if (c->plantas == NULL)
+	{
+		c->tamanho = 1;
+		c->plantas = calloc(1, sizeof(*p));
+
+		if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
+			return -1;
+
+		c->plantas[0] = p;
+		return 0;
+	}
+
+	int pos = 0;
+	// planta existe, só necessita de ser atualizada.
+	if ((pos = colecao_pesquisa(c, p->ID)) != -1)
+	{
+		c->plantas[pos] = p;
+		return 1;
+	}
+	
+	//planta nao existe, é necessário inserir na posição certa
+	
+
+	return 0;
 }
 
 int colecao_tamanho(colecao *c)
 {
+	if (c != NULL)
+		return c->tamanho;
 	return -1;
 }
 
@@ -99,7 +174,7 @@ int planta_apaga(planta *p)
 	// free(p->alcunhas);
 	// free(p);
 
-	return -1;	
+	return -1;
 }
 
 int colecao_apaga(colecao *c)
@@ -113,20 +188,16 @@ int colecao_apaga(colecao *c)
 
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 {
+
 	return NULL;
 }
 
 int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
+	
 	return -1;
 }
 
-void checkPtr(void *ptr, const char *msg, const char *ptrName)
-{
-	if (ptr == NULL)
-	{
-		printf("%s", msg);
-		printf("\n[INFO] - Erro originado por: \"%s\"\n", ptrName);
-		exit(0);
-	}
-}
+//* undef dos macros criados para não passarem para os restantes ficheiros
+#undef str(c)
+#undef MEMORY_ALOC_ERROR_MSG
