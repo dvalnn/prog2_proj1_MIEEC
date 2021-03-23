@@ -196,6 +196,7 @@ int planta_insere(colecao *c, planta *p)
 		return -1;
 
 	//inserir na última posição
+	// c->plantas[c->tamanho] = (planta *)calloc(1, sizeof(c->plantas[c->tamanho]));
 	c->plantas[c->tamanho] = p;
 	c->tamanho += 1;
 
@@ -219,7 +220,6 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 
 planta *planta_remove(colecao *c, const char *nomep)
 {
-
 	return NULL;
 }
 
