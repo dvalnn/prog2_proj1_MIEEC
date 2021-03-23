@@ -18,7 +18,7 @@
 // * útil para dar print do nome do argumento c passado
 #define str(c) #c
 // * útil para calcular qual a string com menor tamanho para strncmp
-#define min(a,b) a < b ? a : b
+// #define min(a,b) a < b ? a : b
 // * mensagem de erro
 #define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Erro ao alocar memória.\n"
 /**
@@ -68,12 +68,7 @@ int qsortKey_ID(const void *a, const void *b)
 	const planta *pa = (planta *)a;
 	const planta *pb = (planta *)b;
 
-	for (int i = 0; i < 9; i++){
-		if (pa->ID[i] - pb->ID[i] < 0)
-			return 1;
-	}
-	return 0;
-	// return strncmp(pa->ID, pb->ID, min(strlen(pa->ID),strlen(pb->ID))) < 0;
+	return -strcmp(pa->ID, pb->ID);
 }
 
 /**
@@ -89,12 +84,7 @@ int qsortKey_nome(const void *a, const void *b)
 	const planta *pa = (planta *)a;
 	const planta *pb = (planta *)b;
 
-	for (int i = 0; i < MAX_NAME - 1; i++){
-		if (pa->nome_cientifico[i] - pb->nome_cientifico[i] < 0)
-			return 1;
-	}
-	return 0;
-	// return strncmp(pa->nome_cientifico, pb->nome_cientifico, min(strlen(pa->nome_cientifico), strlen(pb->nome_cientifico))) < 0;
+	return -strcmp(pb->nome_cientifico, pa->nome_cientifico);
 }
 /**
  * @brief ordena a coleção usando qsort e a função key adequada
@@ -127,9 +117,7 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	novaPlanta->alcunhas = NULL;						 // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
 
 	strcpy(novaPlanta->ID, ID);
-	// novaPlanta->ID[strlen((ID))] = '8';
 	strcpy(novaPlanta->nome_cientifico, nome_cientifico);
-	// novaPlanta->ID[strlen((nome_cientifico))] = '8';
 	novaPlanta->n_sementes = n_sementes;
 	novaPlanta->n_alcunhas = n_alcunhas;
 
@@ -200,7 +188,7 @@ int planta_insere(colecao *c, planta *p)
 	//planta nao existe, é necessário inserir na posição certa
 	//! perguntar sobre c->capacidade
 	//alocar memória para vetor com 1 elemento extra
-	c->plantas = realloc(c->plantas, sizeof(planta *)*(c->tamanho + 1));
+	c->plantas = realloc(c->plantas, sizeof(planta *) * (c->tamanho + 1));
 	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 		return -1;
 
@@ -234,13 +222,15 @@ planta *planta_remove(colecao *c, const char *nomep)
 
 int planta_apaga(planta *p)
 {
-	// if (p == NULL)
-	// 	return -1;
-	// //IMCOMPLETO -- NECESSITA DE REVISÃO
-	// for (int i = 0; i < p->n_alcunhas; i++)
-	// 	free(p->alcunhas[i]);
-	// free(p->alcunhas);
-	// free(p);
+	if (p != NULL)
+	{
+		for (int i = 0; i < p->n_alcunhas; i++)
+			free(p->alcunhas[i]);
+		free(p->alcunhas);
+		free(p);
+		p = NULL;
+		return 0;
+	}
 
 	return -1;
 }
@@ -248,10 +238,14 @@ int planta_apaga(planta *p)
 int colecao_apaga(colecao *c)
 {
 	//IMCOMPLETO -- NECESSITA DE REVISÃO
-	free(c);
-	c = NULL;
+	if (c != NULL)
+	{
+		free(c);
+		c = NULL;
+		return 0;
+	}
 
-	return 0;
+	return -1;
 }
 
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
@@ -264,7 +258,7 @@ int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
 	if (c == NULL)
 		return -1;
-	
+
 	if (strcmp(tipo_ordem, "ID") != 0 && strcmp(tipo_ordem, "nome") != 0)
 		return -1;
 

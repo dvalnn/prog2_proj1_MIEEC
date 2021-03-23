@@ -1,13 +1,24 @@
 /*****************************************************************/
 /*         Trabalho pratico 1 | PROG2 | MIEEC | 2020/21         */
 /*****************************************************************/
-/*                  NAO ALTERAR ESTE FICHEIRO                    */
+/*         NAO ALTERAR ESTE FICHEIRO  //! haha teclado go brrr    */
 /*****************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "plantas.h"
+
+void printCol(colecao *c)
+{
+    if (c != NULL)
+    {
+        printf("tipo_ordem: %s || tamanho: %ld", c->tipo_ordem, c->tamanho);
+        for (int i = 0; i < c->tamanho; i++)
+            printf("\npos: %d || ID: %s || Nome: %s", i, c->plantas[i]->ID, c->plantas[i]->nome_cientifico);
+    }
+    printf("\n");
+}
 
 /* VERIFICACOES IMPLEMENTADAS */
 int verifica_planta_nova(planta **p, const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
@@ -146,6 +157,7 @@ int verifica_planta_insere(colecao **c)
     if (strcmp((*c)->plantas[0]->ID, "UOIEA") != 0 || strcmp((*c)->plantas[1]->ID, "AEIOU") != 0)
     {
         printf("...verifica_planta_insere: nao inseriu correctamente a 1ª e 3ª plantas, nao estao na posicao correta (ERRO)\n");
+        printCol(*c);
         er++;
         return er;
     }
@@ -155,6 +167,7 @@ int verifica_planta_insere(colecao **c)
     if ((*c)->plantas[0]->n_sementes != 9)
     {
         printf("...verifica_planta_insere: n_sementes da 1ª planta (= %d) 'e diferente do esperado (= 9) (ERRO)\n", (*c)->plantas[0]->n_sementes);
+        printCol(*c);
         er++;
     }
     else
@@ -163,6 +176,7 @@ int verifica_planta_insere(colecao **c)
     if ((*c)->plantas[0]->n_alcunhas != 2)
     {
         printf("...verifica_planta_insere: n_alcunhas da 1ª planta (= %d) 'e diferente do esperado (= 2) (ERRO)\n", (*c)->plantas[0]->n_alcunhas);
+        printCol(*c);
         er++;
     }
     else
