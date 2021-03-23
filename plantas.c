@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // * útil para dar print do nome do argumento c passado
 #define str(c) #c
@@ -54,7 +55,15 @@ int colecao_pesquisa(colecao *c, const char *plantaID)
 	return -1;
 }
 
-int qsortKey_ID(const void *a, const void *b)
+/**
+ * @brief key para ao qsort utilizado em colecao_reordena - compara com base no ID das plantas
+ * 
+ * @param a planta "a" a ser comparadada
+ * @param b planta "b" a ser comparada
+ * @return true a->ID > b->ID
+ * @return false a->ID < b->ID
+ */
+bool qsortKey_ID(const void *a, const void *b)
 {
 	planta *pa = (planta *)a;
 	planta *pb = (planta *)b;
@@ -62,7 +71,15 @@ int qsortKey_ID(const void *a, const void *b)
 	return strcmp(pa->ID, pb->ID) > 0;
 }
 
-int qsortKey_nome(const void *a, const void *b)
+/**
+ * @brief key para o qsort utilizado em colecao_reordena - compara com base no nome científico das plantas
+ * 
+ * @param a planta "a" a ser comparada
+ * @param b planta "b" a ser comparada
+ * @return true a->nome_cientifico > b->nome_cientifico
+ * @return false a->nome_cientifico <= b->nome_cientifico
+ */
+bool qsortKey_nome(const void *a, const void *b)
 {
 	planta *pa = (planta *)a;
 	planta *pb = (planta *)b;
@@ -209,9 +226,12 @@ int colecao_reordena(colecao *c, const char *tipo_ordem)
 	if (!strcmp(tipo_ordem, c->tipo_ordem))
 		return 0;
 
+	//Algoritmo de ordenação da coleção baseado no qsort da stdlib de C
+	//De acordo com o tipo de ordenação da coleção, o qsort é chamado com a função key adequada
+	//! perguntar se a verificação dos argumentos tem de ser case sensitive ou não
 	if (!strcasecmp(tipo_ordem, "ID"))
 		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_ID);
-	else if (!tipo_ordem, "nome")
+	else if (!strcasecmp(tipo_ordem, "nome"))
 		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
 	else
 		return -1;
