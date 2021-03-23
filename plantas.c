@@ -20,7 +20,6 @@
 
 // * mensagem de erro
 #define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Erro ao alocar memória.\n"
-
 /**
  * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
  * 
@@ -55,9 +54,20 @@ int colecao_pesquisa(colecao *c, const char *plantaID)
 	return -1;
 }
 
-int qsortKey(const void* c1, const void* b)
+int qsortKey_ID(const void *a, const void *b)
 {
-	
+	planta *pa = (planta *)a;
+	planta *pb = (planta *)b;
+
+	return strcmp(pa->ID, pb->ID) > 0;
+}
+
+int qsortKey_nome(const void *a, const void *b)
+{
+	planta *pa = (planta *)a;
+	planta *pb = (planta *)b;
+
+	return strcmp(pa->nome_cientifico, pb->nome_cientifico) > 0;
 }
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
@@ -140,9 +150,8 @@ int planta_insere(colecao *c, planta *p)
 		c->plantas[pos] = p;
 		return 1;
 	}
-	
+
 	//planta nao existe, é necessário inserir na posição certa
-	
 
 	return 0;
 }
@@ -194,8 +203,20 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 
 int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
-	
-	return -1;
+	if (c == NULL || tipo_ordem == NULL)
+		return -1;
+
+	if (!strcmp(tipo_ordem, c->tipo_ordem))
+		return 0;
+
+	if (!strcasecmp(tipo_ordem, "ID"))
+		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_ID);
+	else if (!tipo_ordem, "nome")
+		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
+	else
+		return -1;
+
+	return 1;
 }
 
 //* undef dos macros criados para não passarem para os restantes ficheiros
