@@ -129,7 +129,11 @@ int verifica_planta_insere(colecao **c)
     planta *p1 = planta_nova("UOIEA", "Eryngium", alcunhas_p1, 1, 1);
     planta *p2 = planta_nova("ABC", "Rosae", alcunhas_p2, 1, 3);
     planta *p3 = planta_nova("AEIOU", "Lirium", NULL, 0, 10);
-    planta *p4 = planta_nova("UOIEA", "Eryngium", alcunhas_p1, 2, 8);
+    planta *p4 = planta_nova("UOIEA", "Eryngium", alcunhas_p1, 3, 8);
+    //adicionado
+    // planta *p5 = planta_nova("UAWCFHMA", "Garen", alcunhas_p1, 4, 8);
+    // planta *p6 = planta_nova("CFEYR", "Naumsei", alcunhas_p1, 5, 8);
+    // planta *p7 = planta_nova("BUEBN", "Octane", alcunhas_p1, 6, 8);
 
     erro = planta_insere(*c, p1);
 

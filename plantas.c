@@ -68,7 +68,9 @@ int qsortKey_ID(const void *a, const void *b)
 	const planta *pa = (planta *)a;
 	const planta *pb = (planta *)b;
 
-	return -strcmp(pa->ID, pb->ID);
+	printf("ID A - %s, ID B - %s, COMP: %d\n", pa->ID, pb->ID, strcmp(pa->ID, pb->ID));
+
+	return strcmp(pa->ID, pb->ID);
 }
 
 /**
@@ -84,7 +86,7 @@ int qsortKey_nome(const void *a, const void *b)
 	const planta *pa = (planta *)a;
 	const planta *pb = (planta *)b;
 
-	return -strcmp(pb->nome_cientifico, pa->nome_cientifico);
+	return strcmp(pb->nome_cientifico, pa->nome_cientifico);
 }
 /**
  * @brief ordena a coleção usando qsort e a função key adequada
@@ -101,6 +103,7 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
 		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
 	else
 		return -1;
+
 	return -1;
 }
 
@@ -113,8 +116,8 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 		return NULL;
 	}
 
-	planta *novaPlanta = calloc(1, sizeof(*novaPlanta)); // aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
-	novaPlanta->alcunhas = NULL;						 // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
+	planta *novaPlanta = (planta *)calloc(1, sizeof(*novaPlanta)); // aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
+	novaPlanta->alcunhas = NULL;								   // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
 
 	strcpy(novaPlanta->ID, ID);
 	strcpy(novaPlanta->nome_cientifico, nome_cientifico);
@@ -125,11 +128,11 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	if (novaPlanta->n_alcunhas == 0)
 		return novaPlanta;
 
-	novaPlanta->alcunhas = calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
+	novaPlanta->alcunhas = (char **)calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
 
 	for (int i = 0; i < novaPlanta->n_alcunhas; i++)
 	{
-		novaPlanta->alcunhas[i] = calloc(1, strlen(alcunhas[i]) + 1);
+		novaPlanta->alcunhas[i] = (char *)calloc(1, strlen(alcunhas[i]) + 1);
 		if (checkPtr(novaPlanta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(novaPlanta->alcunhas[i])))
 			return NULL;
 		strcpy(novaPlanta->alcunhas[i], alcunhas[i]);
@@ -168,7 +171,7 @@ int planta_insere(colecao *c, planta *p)
 	if (c->plantas == NULL)
 	{
 		c->tamanho = 1;
-		c->plantas = calloc(1, sizeof(c->plantas));
+		c->plantas = (planta **)calloc(1, sizeof(c->plantas));
 
 		if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 			return -1;
@@ -188,13 +191,13 @@ int planta_insere(colecao *c, planta *p)
 	//planta nao existe, é necessário inserir na posição certa
 	//! perguntar sobre c->capacidade
 	//alocar memória para vetor com 1 elemento extra
-	c->plantas = realloc(c->plantas, sizeof(c->plantas) * (c->tamanho + 1));
+	c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho + 1));
 	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 		return -1;
 
 	//inserir na última posição
 	c->plantas[c->tamanho] = p;
-	c->tamanho++;
+	c->tamanho += 1;
 
 	// ordenar as plantas
 	colecao_ordena(c, c->tipo_ordem);
