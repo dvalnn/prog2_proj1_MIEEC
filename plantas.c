@@ -86,6 +86,23 @@ bool qsortKey_nome(const void *a, const void *b)
 
 	return strcmp(pa->nome_cientifico, pb->nome_cientifico) > 0;
 }
+/**
+ * @brief ordena a coleção usando qsort e a função key adequada
+ * 
+ * @param c Coleção a ordenar
+ * @param tipo_ordem Ordem a ser introduzida na coleção
+ * @return int -1 se ocorrer erro, senão retorna 1
+ */
+int colecao_ordena(colecao *c, const char *tipo_ordem)
+{
+	if (!strcasecmp(tipo_ordem, "ID"))
+		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_ID);
+	else if (!strcasecmp(tipo_ordem, "nome"))
+		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
+	else
+		return -1;
+	return 1;
+}
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
 {
@@ -123,7 +140,7 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 
 colecao *colecao_nova(const char *tipo_ordem)
 {
-	if (strlen(tipo_ordem) > 4)
+	if (strcmp(tipo_ordem, "ID") != 0 && strcmp(tipo_ordem, "nome") != 0)
 	{
 		printf("\n[ERRO] - Argumento inválido.\n");
 		return NULL;
@@ -169,6 +186,18 @@ int planta_insere(colecao *c, planta *p)
 	}
 
 	//planta nao existe, é necessário inserir na posição certa
+	//! perguntar sobre c->capacidade
+	//alocar memória para vetor com 1 elemento extra
+	c->plantas = realloc(c->plantas, c->tamanho + 1);
+	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
+		return -1;
+
+	//inserir na última posição
+	c->plantas[c->tamanho] = p;
+	c->tamanho++;
+
+	// ordenar as plantas
+	colecao_ordena(c, c->tipo_ordem);
 
 	return 0;
 }
@@ -187,6 +216,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 
 planta *planta_remove(colecao *c, const char *nomep)
 {
+
 	return NULL;
 }
 
@@ -229,14 +259,7 @@ int colecao_reordena(colecao *c, const char *tipo_ordem)
 	//Algoritmo de ordenação da coleção baseado no qsort da stdlib de C
 	//De acordo com o tipo de ordenação da coleção, o qsort é chamado com a função key adequada
 	//! perguntar se a verificação dos argumentos tem de ser case sensitive ou não
-	if (!strcasecmp(tipo_ordem, "ID"))
-		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_ID);
-	else if (!strcasecmp(tipo_ordem, "nome"))
-		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
-	else
-		return -1;
-
-	return 1;
+	return colecao_ordena(c, tipo_ordem);
 }
 
 //* undef dos macros criados para não passarem para os restantes ficheiros
