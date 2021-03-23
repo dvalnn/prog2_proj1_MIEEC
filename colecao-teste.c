@@ -11,13 +11,13 @@
 
 void printCol(colecao *c)
 {
-    if (c != NULL)
-    {
-        printf("tipo_ordem: %s || tamanho: %ld", c->tipo_ordem, c->tamanho);
-        for (int i = 0; i < c->tamanho; i++)
-            printf("\npos: %d || ID: %s || Nome: %s", i, c->plantas[i]->ID, c->plantas[i]->nome_cientifico);
-    }
-    printf("\n");
+    // if (c != NULL)
+    // {
+    //     printf("tipo_ordem: %s || tamanho: %ld", c->tipo_ordem, c->tamanho);
+    //     for (int i = 0; i < c->tamanho; i++)
+    //         printf("\npos: %d || ID: %s || Nome: %s", i, c->plantas[i]->ID, c->plantas[i]->nome_cientifico);
+    // }
+    // printf("\n");
 }
 
 /* VERIFICACOES IMPLEMENTADAS */
@@ -332,7 +332,7 @@ int verifica_colecao_reordena(colecao **c)
 }
 int main()
 {
-    int errorCount = 0, error;
+    int errorCount = 0, error = 0;
 
     char nome[] = "Sagittaria lancifolia L. ssp. media (Micheli) Bogin";
     char *alcunhas[] = {"bulltongue arrowhead", "delta arrowhead"};

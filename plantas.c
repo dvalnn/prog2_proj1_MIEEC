@@ -168,7 +168,7 @@ int planta_insere(colecao *c, planta *p)
 	if (c->plantas == NULL)
 	{
 		c->tamanho = 1;
-		c->plantas = calloc(1, sizeof(planta *));
+		c->plantas = calloc(1, sizeof(c->plantas));
 
 		if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 			return -1;
@@ -188,7 +188,7 @@ int planta_insere(colecao *c, planta *p)
 	//planta nao existe, é necessário inserir na posição certa
 	//! perguntar sobre c->capacidade
 	//alocar memória para vetor com 1 elemento extra
-	c->plantas = realloc(c->plantas, sizeof(planta *) * (c->tamanho + 1));
+	c->plantas = realloc(c->plantas, sizeof(c->plantas) * (c->tamanho + 1));
 	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
 		return -1;
 
