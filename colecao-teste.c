@@ -1,24 +1,13 @@
 /*****************************************************************/
 /*         Trabalho pratico 1 | PROG2 | MIEEC | 2020/21         */
 /*****************************************************************/
-/*         NAO ALTERAR ESTE FICHEIRO  //! haha teclado go brrr    */
+/*                  NAO ALTERAR ESTE FICHEIRO                    */
 /*****************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "plantas.h"
-
-void printCol(colecao *c)
-{
-    // if (c != NULL)
-    // {
-    //     printf("tipo_ordem: %s || tamanho: %ld", c->tipo_ordem, c->tamanho);
-    //     for (int i = 0; i < c->tamanho; i++)
-    //         printf("\npos: %d || ID: %s || Nome: %s", i, c->plantas[i]->ID, c->plantas[i]->nome_cientifico);
-    // }
-    // printf("\n");
-}
 
 /* VERIFICACOES IMPLEMENTADAS */
 int verifica_planta_nova(planta **p, const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
@@ -129,11 +118,7 @@ int verifica_planta_insere(colecao **c)
     planta *p1 = planta_nova("UOIEA", "Eryngium", alcunhas_p1, 1, 1);
     planta *p2 = planta_nova("ABC", "Rosae", alcunhas_p2, 1, 3);
     planta *p3 = planta_nova("AEIOU", "Lirium", NULL, 0, 10);
-    planta *p4 = planta_nova("UOIEA", "Eryngium", alcunhas_p1, 3, 8);
-    //adicionado
-    // planta *p5 = planta_nova("UAWCFHMA", "Garen", alcunhas_p1, 4, 8);
-    // planta *p6 = planta_nova("CFEYR", "Naumsei", alcunhas_p1, 5, 8);
-    // planta *p7 = planta_nova("BUEBN", "Octane", alcunhas_p1, 6, 8);
+    planta *p4 = planta_nova("UOIEA", "Eryngium", alcunhas_p1, 2, 8);
 
     erro = planta_insere(*c, p1);
 
@@ -161,7 +146,6 @@ int verifica_planta_insere(colecao **c)
     if (strcmp((*c)->plantas[0]->ID, "UOIEA") != 0 || strcmp((*c)->plantas[1]->ID, "AEIOU") != 0)
     {
         printf("...verifica_planta_insere: nao inseriu correctamente a 1ª e 3ª plantas, nao estao na posicao correta (ERRO)\n");
-        printCol(*c);
         er++;
         return er;
     }
@@ -171,7 +155,6 @@ int verifica_planta_insere(colecao **c)
     if ((*c)->plantas[0]->n_sementes != 9)
     {
         printf("...verifica_planta_insere: n_sementes da 1ª planta (= %d) 'e diferente do esperado (= 9) (ERRO)\n", (*c)->plantas[0]->n_sementes);
-        printCol(*c);
         er++;
     }
     else
@@ -180,7 +163,6 @@ int verifica_planta_insere(colecao **c)
     if ((*c)->plantas[0]->n_alcunhas != 2)
     {
         printf("...verifica_planta_insere: n_alcunhas da 1ª planta (= %d) 'e diferente do esperado (= 2) (ERRO)\n", (*c)->plantas[0]->n_alcunhas);
-        printCol(*c);
         er++;
     }
     else
@@ -336,7 +318,7 @@ int verifica_colecao_reordena(colecao **c)
 }
 int main()
 {
-    int errorCount = 0, error = 0;
+    int errorCount = 0, error;
 
     char nome[] = "Sagittaria lancifolia L. ssp. media (Micheli) Bogin";
     char *alcunhas[] = {"bulltongue arrowhead", "delta arrowhead"};
