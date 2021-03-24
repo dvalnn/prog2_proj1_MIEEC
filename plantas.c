@@ -116,8 +116,10 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 		return NULL;
 	}
 
-	planta *novaPlanta = (planta *)calloc(1, sizeof(*novaPlanta)); // aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
-	novaPlanta->alcunhas = NULL;								   // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
+	// aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
+	planta *novaPlanta = (planta *)calloc(1, sizeof(*novaPlanta)); 
+	// inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
+	novaPlanta->alcunhas = NULL;								   
 
 	strcpy(novaPlanta->ID, ID);
 	strcpy(novaPlanta->nome_cientifico, nome_cientifico);
