@@ -68,8 +68,6 @@ int qsortKey_ID(const void *a, const void *b)
 	const planta *pa = *(planta **)a;
 	const planta *pb = *(planta **)b;
 
-	printf("ID A - %s, ID B - %s, COMP: %d\n", pa->ID, pb->ID, strcmp(pa->ID, pb->ID));
-
 	return -strcmp(pa->ID, pb->ID);
 }
 
@@ -245,7 +243,7 @@ int planta_apaga(planta *p)
 
 int colecao_apaga(colecao *c)
 {
-	//IMCOMPLETO -- NECESSITA DE REVISÃO
+	//! IMCOMPLETO -- NECESSITA DE REVISÃO - APAGAR ELEMENTOS ANTES DE APAGAR COLEÇÃO 
 	if (c != NULL)
 	{
 		free(c);
