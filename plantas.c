@@ -46,7 +46,7 @@ int checkPtr(void *ptr, const char *msg, const char *ptrName)
  * @param plantaID ID da planta a pesquisar na string
  * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
  */
-//! melhorar caso haja tempo :) - adicionar pesquisa binária
+//TODO: melhorar caso haja tempo :) - adicionar pesquisa binária
 int colecao_pesquisa(colecao *c, const char *plantaID)
 {
 	for (int i = 0; i < c->tamanho; i++)
@@ -117,9 +117,9 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	}
 
 	// aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
-	planta *novaPlanta = (planta *)calloc(1, sizeof(*novaPlanta)); 
+	planta *novaPlanta = (planta *)calloc(1, sizeof(*novaPlanta));
 	// inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
-	novaPlanta->alcunhas = NULL;								   
+	novaPlanta->alcunhas = NULL;
 
 	strcpy(novaPlanta->ID, ID);
 	strcpy(novaPlanta->nome_cientifico, nome_cientifico);
@@ -186,6 +186,7 @@ int planta_insere(colecao *c, planta *p)
 
 	int pos = 0;
 	// planta existe, só necessita de ser atualizada.
+	// ! imcompleto
 	if ((pos = colecao_pesquisa(c, p->ID)) != -1)
 	{
 		c->plantas[pos] = p;
@@ -200,7 +201,6 @@ int planta_insere(colecao *c, planta *p)
 		return -1;
 
 	//inserir na última posição
-	// c->plantas[c->tamanho] = (planta *)calloc(1, sizeof(c->plantas[c->tamanho]));
 	c->plantas[c->tamanho] = p;
 	c->tamanho += 1;
 
