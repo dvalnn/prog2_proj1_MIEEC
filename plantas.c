@@ -22,6 +22,8 @@
 // * mensagens de erro
 #define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Falha ao alocar memória.\n"
 #define PLANTA_UPDATE_ERROR_MSG "\n[ERRO]  - Falha ao atualizar a planta\n"
+#define COLECAO_CREATION_ERROR_MSG "\n[ERRO] - Falha ao criar a coleção\n"
+#define PLANTA_CREATION_ERROR_MSG "\n[ERRO] - Falha ao criar a planta\n"
 
 //!criar mais mensagens de erro :)
 
@@ -33,7 +35,7 @@
 #define PESQUISA_ID 0
 #define PESQUISA_NOME 1
 
-#define MAX_ALCUNHAS 100
+#define MAX_ALCUNHAS 10
 //TODO: melhorar caso haja tempo :) - adicionar pesquisa binária
 /**
  * @brief pesquisa a posição da planta na string
@@ -49,13 +51,13 @@ int colecao_pesquisa(const colecao *haystack, const char *needle, const char tip
 	if (tipo_pesquisa)
 	{
 		for (int i = 0; i < haystack->tamanho; i++)
-			if (!strcmp(haystack->plantas[i]->nome_cientifico, needle))
+			if (!strcasecmp(haystack->plantas[i]->nome_cientifico, needle))
 				return i;
 	}
 	else
 	{
 		for (int i = 0; i < haystack->tamanho; i++)
-			if (!strcmp(haystack->plantas[i]->ID, needle))
+			if (!strcasecmp(haystack->plantas[i]->ID, needle))
 				return i;
 	}
 	return -1;
@@ -123,7 +125,7 @@ int qsortKey_nome(const void *a, const void *b)
  */
 int colecao_ordena(colecao *c, const char *tipo_ordem)
 {
-	if (!strcasecmp(tipo_ordem, "ID"))
+	if (!strcasecmp(tipo_ordem, "id"))
 		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_ID);
 	else if (!strcasecmp(tipo_ordem, "nome"))
 		qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
@@ -244,7 +246,7 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 
 colecao *colecao_nova(const char *tipo_ordem)
 {
-	if (strcmp(tipo_ordem, "ID") != 0 && strcmp(tipo_ordem, "nome") != 0)
+	if (!strcasecmp(tipo_ordem, "id") && !strcasecmp(tipo_ordem, "nome"))
 	{
 		printf("\n[ERRO] - Argumento inválido.\n");
 		return NULL;
@@ -314,45 +316,60 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 	FILE *file;
 	file = fopen(nome_ficheiro, "r");
 	if (file == NULL)
+	{
+		fclose(file);
+		file = NULL;
 		return NULL;
+	}
 
 	char id[10] = {'\0'};
 	char nome[MAX_NAME] = {'\0'};
-	char *alcunhas[MAX_ALCUNHAS];
 	int n_sementes = 0;
+	char **alcunhas = (char **)calloc(MAX_ALCUNHAS, sizeof(*alcunhas));
 
 	colecao *importada = colecao_nova(tipo_ordem);
-
-	//O grupo g209 tem alergia a strtok portanto, regular expressions são a melhor solução.
-	// * %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
-	// * %*c lẽ e discarta o char "," que é usado para separar as strings.
-	while (fscanf(file, "%9[^,] %*c %199[^,] %*c %d", id, nome, &n_sementes) == 3)
+	if (checkPtr(importada, COLECAO_CREATION_ERROR_MSG, str(colecao)))
 	{
-		int n_alcunhas = 0;
-
-		if (getc(file) == '\n')
-		{ // não existem alcunhas
-			planta *nova = planta_nova(id, nome, NULL, 0, n_sementes);
-			if (checkPtr(nova, MEMORY_ALOC_ERROR_MSG, str(nova)))
-			{
-				planta_apaga(nova);
-				colecao_apaga(importada);
-				return NULL;
-			}
-			if (planta_insere(importada, nova) == -1)
-			{
-				planta_apaga(nova);
-				colecao_apaga(importada);
-				return NULL;
-			}
-			continue;
-		}
-
-		while (fscanf(file, "%s", alcunhas[n_alcunhas]) == 1)
-			n_alcunhas++;
+		fclose(file);
+		file = NULL;
+		return NULL;
 	}
 
+	// * %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
+	// * %*c lê e discarta o char "," que é usado para separar as strings.
+	char flag;
+	int n_alcunhas = 0;
+	char aux[MAX_NAME/2] = {0};
+
+	while (fscanf(file, "%9[^,] %*c %199[^,] %*c %d%c", id, nome, &n_sementes, &flag) == 4)
+	{
+
+		// há alcunhas
+		if (flag == ',')
+		{
+			// >= 1 em vez de == 2, caso não haja \n ou espaço após o valor final do ficheiro
+			while (fscanf(file, "%99[^,\n]%c", &aux[MAX_NAME], &flag) >= 1)
+			{
+				alcunhas[n_alcunhas] = (char *)calloc(n_alcunhas, strlen(aux) + 1);
+				strcpy(alcunhas[n_alcunhas], aux);
+				n_alcunhas++;
+				if (flag != ',' || n_alcunhas == MAX_ALCUNHAS)
+					break;
+			}
+			planta *nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
+			planta_insere(importada, nova); //!por verificação
+			for (short i = 0; i < n_alcunhas; i++)
+				free(alcunhas[i]);
+		}
+		else
+		{
+			planta *nova = planta_nova(id, nome, NULL, 0, n_sementes);
+			planta_insere(importada, nova); //!por verificação
+		}
+	}
 	fclose(file);
+	file = NULL;
+	return importada;
 }
 
 planta *planta_remove(colecao *c, const char *nomep)
@@ -443,10 +460,10 @@ int colecao_reordena(colecao *c, const char *tipo_ordem) //! precisa de revisão
 	if (!c)
 		return -1;
 
-	if (strcmp(tipo_ordem, "ID") != 0 && strcmp(tipo_ordem, "nome") != 0)
+	if (strcasecmp(tipo_ordem, "id") != 0 && strcasecmp(tipo_ordem, "nome") != 0)
 		return -1;
 
-	if (!strcmp(tipo_ordem, c->tipo_ordem))
+	if (!strcasecmp(tipo_ordem, c->tipo_ordem))
 		return 0;
 
 	//Algoritmo de ordenação da coleção baseado no qsort da stdlib de C
