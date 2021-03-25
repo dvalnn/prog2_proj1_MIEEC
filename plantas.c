@@ -35,24 +35,26 @@
 /**
  * @brief pesquisa a posição da planta na string
  * 
- * @param c 
- * @param plantaID ID da planta a pesquisar na string
+ * @param haystack 
+ * @param needle ID da planta a pesquisar na string
  * @param tipo_pesquisa 0 para pesquisar pelo ID, 1 para pesquisar pelo nome
  * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
  */
-int colecao_pesquisa(const colecao *c, const planta *p, const char tipo_pesquisa)
+int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa)
 {
+
 	if (tipo_pesquisa)
 	{
-		for (int i = 0; i < c->tamanho; i++)
-			if (!strcmp(c->plantas[i]->nome_cientifico, p->nome_cientifico))
+		for (int i = 0; i < haystack->tamanho; i++)
+			if (!strcmp(haystack->plantas[i]->nome_cientifico, needle))
 				return i;
 	}
 	else
-		for (int i = 0; i < c->tamanho; i++)
-			if (!strcmp(c->plantas[i]->ID, p->ID))
+	{
+		for (int i = 0; i < haystack->tamanho; i++)
+			if (!strcmp(haystack->plantas[i]->ID, needle))
 				return i;
-
+	}
 	return -1;
 }
 
@@ -126,6 +128,20 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
 		return -1;
 
 	return 0;
+}
+
+/**
+ * @brief Troca a posição das duas plantas inseridas
+ * 
+ * @param a planta** a
+ * @param b planta** b
+ */
+void swap_plantas(planta **a, planta **b)
+{
+	planta *aux;
+	aux = *a;
+	*a = *b;
+	*b = aux;
 }
 
 /**
@@ -264,7 +280,7 @@ int planta_insere(colecao *c, planta *p)
 
 	int pos = 0;
 	// planta existe, só necessita de ser atualizada.
-	if ((pos = colecao_pesquisa(c, p, id)) != -1)
+	if ((pos = colecao_pesquisa(c, p->ID, id)) != -1)
 		return planta_atualiza(c->plantas[pos], p);
 
 	//planta nao existe, é necessário inserir na posição certa.
@@ -298,8 +314,40 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 
 planta *planta_remove(colecao *c, const char *nomep)
 {
+	if (!c)
+		return NULL;
 
-	return NULL;
+	int pos = 0;
+	if ((pos = colecao_pesquisa(c, nomep, nome)) == -1)
+		return NULL;
+
+	//criar uma cópia da panta a remover, para não perder os dados
+	planta *removida = planta_nova(c->plantas[pos]->ID,
+								   c->plantas[pos]->nome_cientifico,
+								   c->plantas[pos]->alcunhas,
+								   c->plantas[pos]->n_alcunhas,
+								   c->plantas[pos]->n_sementes);
+
+	//decrementar o tamanho do vetor
+	c->tamanho--;
+	//a planta a remover não está na última posição, é necessário trocar
+	if (pos != c->tamanho)
+		swap_plantas(&c->plantas[pos], &c->plantas[c->tamanho]);
+
+	planta_apaga(c->plantas[pos]);
+	c->plantas[pos] = NULL;
+
+	//realoca o espaço do vetor para 1 elemento a menos;
+	c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho));
+	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
+		return NULL;
+
+	//caso a planta não tenha sido da última ou da penúltima posição do vetor, é necessário reordenar
+	if (pos != c->tamanho || pos != c->tamanho - 1)
+		colecao_ordena(c, c->tipo_ordem);
+
+	//retorna a cópia criada da planta removida da colecao
+	return removida;
 }
 
 int planta_apaga(planta *p)
