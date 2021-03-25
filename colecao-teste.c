@@ -13,7 +13,7 @@ void printcol(colecao c)
 {
     for (int i = 0; i < c.tamanho; i++)
     {
-        printf("\nplanta %d/%ld\n", i, c.tamanho);
+        printf("\nplanta %d/%ld\n", i + 1, c.tamanho);
         printf("\tID: %s\n", c.plantas[i]->ID);
         printf("\tnome: %s\n", c.plantas[i]->nome_cientifico);
         printf("\tsementes: %d\n", c.plantas[i]->n_sementes);
@@ -204,6 +204,7 @@ int verifica_colecao_importa(colecao **c, const char *ficheiro)
     printf("Importando colecao...\n");
 
     *c = colecao_importa(ficheiro, "id");
+    printcol(**c);
 
     if (*c == NULL)
     {

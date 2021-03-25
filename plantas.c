@@ -96,7 +96,7 @@ int qsortKey_ID(const void *a, const void *b)
 	const planta *pa = *(planta **)a;
 	const planta *pb = *(planta **)b;
 	//valor do strcmp multilicado por -1 para que a ordenação seja decrescente
-	return -strcmp(pa->ID, pb->ID);
+	return strcmp(pa->ID, pb->ID);
 }
 
 /**
@@ -143,10 +143,12 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
  */
 void swap_plantas(planta **a, planta **b)
 {
+	printf("\n--AQUI swap--\n");
 	planta *aux;
 	aux = *a;
 	*a = *b;
 	*b = aux;
+	printf("\n--AQUI swap 2--\n");
 }
 
 /**
@@ -226,7 +228,7 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	novaPlanta->n_alcunhas = n_alcunhas;
 
 	//Não existem alcunhas - retorna nova planta com novaPlanta->alcunhas = NULL
-	if (!alcunhas)
+	if (!alcunhas || !n_alcunhas)
 		return novaPlanta;
 
 	novaPlanta->alcunhas = (char **)calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
@@ -316,16 +318,11 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 	FILE *file;
 	file = fopen(nome_ficheiro, "r");
 	if (file == NULL)
-	{
-		fclose(file);
-		file = NULL;
 		return NULL;
-	}
 
 	char id[10] = {'\0'};
 	char nome[MAX_NAME] = {'\0'};
 	int n_sementes = 0;
-	char **alcunhas = (char **)calloc(MAX_ALCUNHAS, sizeof(*alcunhas));
 
 	colecao *importada = colecao_nova(tipo_ordem);
 	if (checkPtr(importada, COLECAO_CREATION_ERROR_MSG, str(colecao)))
@@ -338,35 +335,61 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 	// * %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
 	// * %*c lê e discarta o char "," que é usado para separar as strings.
 	char flag;
-	int n_alcunhas = 0;
-	char aux[MAX_NAME/2] = {0};
+	int n_alcunhas;
+	char **alcunhas = (char **)calloc(MAX_ALCUNHAS, sizeof(*alcunhas));
+	char aux[MAX_NAME / 2] = {0};
+	int linha = 0;
 
 	while (fscanf(file, "%9[^,] %*c %199[^,] %*c %d%c", id, nome, &n_sementes, &flag) == 4)
 	{
-
+		n_alcunhas = 0;
+		linha++;
 		// há alcunhas
 		if (flag == ',')
 		{
 			// >= 1 em vez de == 2, caso não haja \n ou espaço após o valor final do ficheiro
-			while (fscanf(file, "%99[^,\n]%c", &aux[MAX_NAME], &flag) >= 1)
+			while (fscanf(file, "%99[^,\n]%c", aux, &flag) >= 1)
 			{
-				alcunhas[n_alcunhas] = (char *)calloc(n_alcunhas, strlen(aux) + 1);
+				alcunhas[n_alcunhas] = (char *)calloc(1, strlen(aux) + 1);
 				strcpy(alcunhas[n_alcunhas], aux);
 				n_alcunhas++;
 				if (flag != ',' || n_alcunhas == MAX_ALCUNHAS)
 					break;
 			}
+			printf("\n");
 			planta *nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
-			planta_insere(importada, nova); //!por verificação
-			for (short i = 0; i < n_alcunhas; i++)
-				free(alcunhas[i]);
+			if (checkPtr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
+				printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+			else if (planta_insere(importada, nova) == -1)
+			{
+				printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+				free(nova);
+			}
 		}
 		else
 		{
 			planta *nova = planta_nova(id, nome, NULL, 0, n_sementes);
-			planta_insere(importada, nova); //!por verificação
+			if (checkPtr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
+				printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+			else if (planta_insere(importada, nova) == -1)
+			{
+				printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+				free(nova);
+			}
 		}
 	}
+	free(alcunhas);
+	colecao_ordena(importada, importada->tipo_ordem);
+
+	// printf("\n--- %s %s sementes: %d alcunhas: %d ---\n",
+	// 	   importada->plantas[importada->tamanho - 1]->ID,
+	// 	   importada->plantas[importada->tamanho - 1]->nome_cientifico,
+	// 	   importada->plantas[importada->tamanho - 1]->n_sementes,
+	// 	   importada->plantas[importada->tamanho - 1]->n_alcunhas);
+
+	// for (int i = 0; i < importada->plantas[importada->tamanho - 1]->n_alcunhas; i++)
+	// 	printf("\t\t%s\n", importada->plantas[importada->tamanho - 1]->alcunhas[i]);
+
 	fclose(file);
 	file = NULL;
 	return importada;
@@ -387,6 +410,9 @@ planta *planta_remove(colecao *c, const char *nomep)
 								   c->plantas[pos]->alcunhas,
 								   c->plantas[pos]->n_alcunhas,
 								   c->plantas[pos]->n_sementes);
+
+	printf("\n-- planta removida 1: %s, %s, %d --\n", c->plantas[pos]->ID, c->plantas[pos]->nome_cientifico, c->plantas[pos]->n_sementes);
+	printf("\n-- planta removida 2: %s, %s, %d --\n", removida->ID, removida->nome_cientifico, removida->n_sementes);
 
 	//decrementar o tamanho do vetor
 	c->tamanho--;
