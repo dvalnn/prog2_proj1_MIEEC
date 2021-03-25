@@ -19,18 +19,20 @@
 #define str(c) #c
 // * útil para calcular qual a string com menor tamanho para strncmp
 // #define min(a,b) a < b ? a : b
-// * mensagem de erro
-#define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Erro ao alocar memória.\n"
+// * mensagens de erro
+#define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Falha ao alocar memória.\n"
+#define PLANTA_UPDATE_ERROR_MSG "\n[ERRO]  - Falha ao atualizar a planta\n"
 /**
  * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
  * 
  * @param ptr pointer a verificar
  * @param msg mensagem de erro a imprimir caso ptr seja NULL
  * @param ptrName nome do ptr a imprimir com a mensagem de erro
+ * @return int - 1 se ocorrer um erro, senão retorna 0
  */
 int checkPtr(void *ptr, const char *msg, const char *ptrName)
 {
-	if (ptr == NULL)
+	if (!ptr)
 	{
 		printf("%s", msg);
 		printf("\n[INFO] - Erro originado por: \"%s\"\n", ptrName);
@@ -65,9 +67,10 @@ int colecao_pesquisa(colecao *c, const char *plantaID)
  */
 int qsortKey_ID(const void *a, const void *b)
 {
+	//cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
 	const planta *pa = *(planta **)a;
 	const planta *pb = *(planta **)b;
-
+	//valor do strcmp multilicado por -1 para que a ordenação seja decrescente
 	return -strcmp(pa->ID, pb->ID);
 }
 
@@ -81,9 +84,10 @@ int qsortKey_ID(const void *a, const void *b)
  */
 int qsortKey_nome(const void *a, const void *b)
 {
+	//cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
 	const planta *pa = *(planta **)a;
 	const planta *pb = *(planta **)b;
-
+	//valor do strcmp multilicado por -1 para que a ordenação seja decrescente
 	return -strcmp(pb->nome_cientifico, pa->nome_cientifico);
 }
 /**
@@ -103,6 +107,20 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
 		return -1;
 
 	return 0;
+}
+
+planta *planta_atualiza(planta *old, planta *new)
+{
+	// o mesmo que old == NULL
+	if(!old || !new)
+		return NULL;
+	//atualizar numero de sementes
+
+	//atualizar numero de alcunhas
+
+	//atualizar alcunhas
+
+	return NULL;
 }
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
@@ -125,14 +143,14 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 	novaPlanta->n_alcunhas = n_alcunhas;
 
 	//Não existem alcunhas - retorna nova planta com novaPlanta->alcunhas = NULL
-	if (alcunhas == NULL)
+	if (!alcunhas)
 		return novaPlanta;
 
 	novaPlanta->alcunhas = (char **)calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
 
 	for (int i = 0; i < novaPlanta->n_alcunhas; i++)
 	{
-		if (alcunhas[i] == NULL)
+		if (!alcunhas[i])
 			break;
 		novaPlanta->alcunhas[i] = (char *)calloc(1, (strlen(alcunhas[i]) + 1));
 		if (checkPtr(novaPlanta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(novaPlanta->alcunhas[i])))
@@ -166,11 +184,11 @@ colecao *colecao_nova(const char *tipo_ordem)
 
 int planta_insere(colecao *c, planta *p)
 {
-	if (p == NULL)
+	if (!p)
 		return -1;
 
 	// caso especial: a coleção está vazia
-	if (c->plantas == NULL)
+	if (!c->plantas)
 	{
 		c->tamanho = 1;
 		c->plantas = (planta **)calloc(1, sizeof(c->plantas));
@@ -187,7 +205,10 @@ int planta_insere(colecao *c, planta *p)
 	// ! imcompleto
 	if ((pos = colecao_pesquisa(c, p->ID)) != -1)
 	{
-		c->plantas[pos] = p;
+		planta *tmp = planta_atualiza(c->plantas[pos], p);
+		if (!checkPtr(tmp, PLANTA_UPDATE_ERROR_MSG, str(tmp)))
+			return -1;
+		c->plantas[pos] = tmp;
 		return 1;
 	}
 
@@ -202,7 +223,7 @@ int planta_insere(colecao *c, planta *p)
 	c->plantas[c->tamanho] = p;
 	c->tamanho += 1;
 
-	// ordenar as plantas
+	// ordenar as plantas --- acaba
 	colecao_ordena(c, c->tipo_ordem);
 
 	return 0;
@@ -228,22 +249,22 @@ planta *planta_remove(colecao *c, const char *nomep)
 int planta_apaga(planta *p)
 {
 	// ! passa os testes mas cria imensos memory leaks ---- perguntar ao prof
-	// if (p != NULL)
-	// {
-	// 	for (int i = 0; i < p->n_alcunhas; i++)
-	// 		free(p->alcunhas[i]);
-	// 	free(p->alcunhas);
-	// 	free(p);
-	// 	p = NULL;
-	// 	return 0;
-	// }
+	if (p != NULL)
+	{
+		for (int i = 0; i < p->n_alcunhas; i++)
+			free(p->alcunhas[i]);
+		free(p->alcunhas);
+		free(p);
+		p = NULL;
+		return 0;
+	}
 
 	return -1;
 }
 
 int colecao_apaga(colecao *c)
 {
-	//! IMCOMPLETO -- NECESSITA DE REVISÃO - APAGAR ELEMENTOS ANTES DE APAGAR COLEÇÃO 
+	//! IMCOMPLETO -- NECESSITA DE REVISÃO - APAGAR ELEMENTOS ANTES DE APAGAR COLEÇÃO
 	if (c != NULL)
 	{
 		free(c);
@@ -262,7 +283,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 
 int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
-	if (c == NULL)
+	if (!c)
 		return -1;
 
 	if (strcmp(tipo_ordem, "ID") != 0 && strcmp(tipo_ordem, "nome") != 0)
