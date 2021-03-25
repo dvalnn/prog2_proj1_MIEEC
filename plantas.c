@@ -283,36 +283,47 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 
 planta *planta_remove(colecao *c, const char *nomep)
 {
+
 	return NULL;
 }
 
 int planta_apaga(planta *p)
 {
-	// ! passa os testes mas cria imensos memory leaks ---- perguntar ao prof
-	if (p != NULL)
-	{
-		for (int i = 0; i < p->n_alcunhas; i++)
-			free(p->alcunhas[i]);
-		free(p->alcunhas);
-		free(p);
-		p = NULL;
-		return 0;
-	}
+	//se p for NULL, não é preciso dar free a nada
+	if (!p)
+		return -1;
+	//free todos os elementos char* do vetor char **alcunhas
+	for (int i = 0; i < p->n_alcunhas; i++)
+		free(p->alcunhas[i]);
 
-	return -1;
+	//free char **alcunhas
+	free(p->alcunhas);
+
+	free(p);
+
+	//deixar o pointer como NULL, para evitar comportamentos imprevistos
+	p = NULL;
+	return 0;
 }
 
 int colecao_apaga(colecao *c)
 {
-	//! IMCOMPLETO -- NECESSITA DE REVISÃO - APAGAR ELEMENTOS ANTES DE APAGAR COLEÇÃO
-	if (c != NULL)
-	{
-		free(c);
-		c = NULL;
-		return 0;
-	}
+	//se c for NULL, n é preciso dar free a nada
+	if (!c)
+		return -1;
 
-	return -1;
+	//free todos os planta* do vetor planta **plantas da coleção c
+	for (int i = 0; i < c->tamanho; i++)
+		planta_apaga(c->plantas[i]);
+
+	//free pointer **plantas
+	free(c->plantas);
+
+	free(c);
+
+	//deixar o pointer como NULL, para evitar comportamentos imprevistos
+	c = NULL;
+	return 0;
 }
 
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
@@ -321,7 +332,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 	return NULL;
 }
 
-int colecao_reordena(colecao *c, const char *tipo_ordem)
+int colecao_reordena(colecao *c, const char *tipo_ordem) //! precisa de revisão
 {
 	if (!c)
 		return -1;
