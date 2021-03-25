@@ -27,6 +27,35 @@
 #define TRUE 1
 #define FALSE 0
 
+// * flags para função colecao_pesquisa
+#define id 0
+#define nome 1
+
+//TODO: melhorar caso haja tempo :) - adicionar pesquisa binária
+/**
+ * @brief pesquisa a posição da planta na string
+ * 
+ * @param c 
+ * @param plantaID ID da planta a pesquisar na string
+ * @param tipo_pesquisa 0 para pesquisar pelo ID, 1 para pesquisar pelo nome
+ * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
+ */
+int colecao_pesquisa(const colecao *c, const planta *p, const char tipo_pesquisa)
+{
+	if (tipo_pesquisa)
+	{
+		for (int i = 0; i < c->tamanho; i++)
+			if (!strcmp(c->plantas[i]->nome_cientifico, p->nome_cientifico))
+				return i;
+	}
+	else
+		for (int i = 0; i < c->tamanho; i++)
+			if (!strcmp(c->plantas[i]->ID, p->ID))
+				return i;
+
+	return -1;
+}
+
 /**
  * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
  * 
@@ -44,22 +73,6 @@ int checkPtr(void *ptr, const char *msg, const char *ptrName)
 		return 1;
 	}
 	return 0;
-}
-
-/**
- * @brief pesquisa a posição da planta na string
- * 
- * @param c 
- * @param plantaID ID da planta a pesquisar na string
- * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
- */
-//TODO: melhorar caso haja tempo :) - adicionar pesquisa binária
-int colecao_pesquisa(colecao *c, const char *plantaID)
-{
-	for (int i = 0; i < c->tamanho; i++)
-		if (!strcmp(c->plantas[i]->ID, plantaID))
-			return i;
-	return -1;
 }
 
 /**
@@ -95,6 +108,7 @@ int qsortKey_nome(const void *a, const void *b)
 	//valor do strcmp multilicado por -1 para que a ordenação seja decrescente
 	return -strcmp(pb->nome_cientifico, pa->nome_cientifico);
 }
+
 /**
  * @brief ordena a coleção usando qsort e a função key adequada
  * 
@@ -250,7 +264,7 @@ int planta_insere(colecao *c, planta *p)
 
 	int pos = 0;
 	// planta existe, só necessita de ser atualizada.
-	if ((pos = colecao_pesquisa(c, p->ID)) != -1)
+	if ((pos = colecao_pesquisa(c, p, id)) != -1)
 		return planta_atualiza(c->plantas[pos], p);
 
 	//planta nao existe, é necessário inserir na posição certa.
@@ -278,6 +292,7 @@ int colecao_tamanho(colecao *c)
 
 colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 {
+
 	return NULL;
 }
 
