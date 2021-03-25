@@ -23,14 +23,17 @@
 #define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Falha ao alocar memória.\n"
 #define PLANTA_UPDATE_ERROR_MSG "\n[ERRO]  - Falha ao atualizar a planta\n"
 
+//!criar mais mensagens de erro :)
+
 // * macros para evitar incluir <stdbool.h> desnecessariamente
 #define TRUE 1
 #define FALSE 0
 
 // * flags para função colecao_pesquisa
-#define id 0
-#define nome 1
+#define PESQUISA_ID 0
+#define PESQUISA_NOME 1
 
+#define MAX_ALCUNHAS 100
 //TODO: melhorar caso haja tempo :) - adicionar pesquisa binária
 /**
  * @brief pesquisa a posição da planta na string
@@ -280,7 +283,7 @@ int planta_insere(colecao *c, planta *p)
 
 	int pos = 0;
 	// planta existe, só necessita de ser atualizada.
-	if ((pos = colecao_pesquisa(c, p->ID, id)) != -1)
+	if ((pos = colecao_pesquisa(c, p->ID, PESQUISA_ID)) != -1)
 		return planta_atualiza(c->plantas[pos], p);
 
 	//planta nao existe, é necessário inserir na posição certa.
@@ -308,8 +311,48 @@ int colecao_tamanho(colecao *c)
 
 colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 {
+	FILE *file;
+	file = fopen(nome_ficheiro, "r");
+	if (file == NULL)
+		return NULL;
 
-	return NULL;
+	char id[10] = {'\0'};
+	char nome[MAX_NAME] = {'\0'};
+	char *alcunhas[MAX_ALCUNHAS];
+	int n_sementes = 0;
+
+	colecao *importada = colecao_nova(tipo_ordem);
+
+	//O grupo g209 tem alergia a strtok portanto, regular expressions são a melhor solução.
+	// * %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
+	// * %*c lẽ e discarta o char "," que é usado para separar as strings.
+	while (fscanf(file, "%9[^,] %*c %199[^,] %*c %d", id, nome, &n_sementes) == 3)
+	{
+		int n_alcunhas = 0;
+
+		if (getc(file) == '\n')
+		{ // não existem alcunhas
+			planta *nova = planta_nova(id, nome, NULL, 0, n_sementes);
+			if (checkPtr(nova, MEMORY_ALOC_ERROR_MSG, str(nova)))
+			{
+				planta_apaga(nova);
+				colecao_apaga(importada);
+				return NULL;
+			}
+			if (planta_insere(importada, nova) == -1)
+			{
+				planta_apaga(nova);
+				colecao_apaga(importada);
+				return NULL;
+			}
+			continue;
+		}
+
+		while (fscanf(file, "%s", alcunhas[n_alcunhas]) == 1)
+			n_alcunhas++;
+	}
+
+	fclose(file);
 }
 
 planta *planta_remove(colecao *c, const char *nomep)
@@ -318,7 +361,7 @@ planta *planta_remove(colecao *c, const char *nomep)
 		return NULL;
 
 	int pos = 0;
-	if ((pos = colecao_pesquisa(c, nomep, nome)) == -1)
+	if ((pos = colecao_pesquisa(c, nomep, PESQUISA_NOME)) == -1)
 		return NULL;
 
 	//criar uma cópia da panta a remover, para não perder os dados

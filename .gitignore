@@ -1,3 +1,4 @@
 *.out
 valgrind-out.txt
 teste.c
+db_small.txt
