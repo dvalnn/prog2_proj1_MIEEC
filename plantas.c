@@ -136,7 +136,7 @@ int planta_atualiza(planta *old, planta *new)
 
 	//alocar espaço no vetor alcunhas para os novos char*
 	old->alcunhas = (char **)realloc(old->alcunhas, sizeof(old->alcunhas) * new->n_alcunhas);
-	if (!checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
+	if (checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
 		return -1;
 
 	for (int i = 0; i < new->n_alcunhas; i++)
@@ -155,8 +155,10 @@ int planta_atualiza(planta *old, planta *new)
 		if (novaAlcunha)
 		{
 			old->alcunhas[old->n_alcunhas] = (char *)calloc(1, strlen(new->alcunhas[i]) + 1);
-			if (!checkPtr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
+
+			if (checkPtr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
 				return -1;
+
 			strcpy(old->alcunhas[old->n_alcunhas], new->alcunhas[i]);
 			old->n_alcunhas++;
 		}
