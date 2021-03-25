@@ -143,12 +143,10 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
  */
 void swap_plantas(planta **a, planta **b)
 {
-	printf("\n--AQUI swap--\n");
 	planta *aux;
 	aux = *a;
 	*a = *b;
 	*b = aux;
-	printf("\n--AQUI swap 2--\n");
 }
 
 /**
@@ -356,7 +354,11 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 				if (flag != ',' || n_alcunhas == MAX_ALCUNHAS)
 					break;
 			}
-			printf("\n");
+			for (int i = 0; i < n_alcunhas; i++)
+			{
+				free(alcunhas[n_alcunhas]);
+				alcunhas[n_alcunhas] = NULL;
+			}
 			planta *nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
 			if (checkPtr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
 				printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
@@ -381,14 +383,14 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 	free(alcunhas);
 	colecao_ordena(importada, importada->tipo_ordem);
 
-	// printf("\n--- %s %s sementes: %d alcunhas: %d ---\n",
-	// 	   importada->plantas[importada->tamanho - 1]->ID,
-	// 	   importada->plantas[importada->tamanho - 1]->nome_cientifico,
-	// 	   importada->plantas[importada->tamanho - 1]->n_sementes,
-	// 	   importada->plantas[importada->tamanho - 1]->n_alcunhas);
+	printf("\n--- %s %s sementes: %d alcunhas: %d ---\n",
+		   importada->plantas[420]->ID,
+		   importada->plantas[420]->nome_cientifico,
+		   importada->plantas[420]->n_sementes,
+		   importada->plantas[420]->n_alcunhas);
 
-	// for (int i = 0; i < importada->plantas[importada->tamanho - 1]->n_alcunhas; i++)
-	// 	printf("\t\t%s\n", importada->plantas[importada->tamanho - 1]->alcunhas[i]);
+	for (int i = 0; i < importada->plantas[420]->n_alcunhas; i++)
+		printf("\t\t%s\n", importada->plantas[420]->alcunhas[i]);
 
 	fclose(file);
 	file = NULL;
@@ -411,17 +413,17 @@ planta *planta_remove(colecao *c, const char *nomep)
 								   c->plantas[pos]->n_alcunhas,
 								   c->plantas[pos]->n_sementes);
 
-	printf("\n-- planta removida 1: %s, %s, %d --\n", c->plantas[pos]->ID, c->plantas[pos]->nome_cientifico, c->plantas[pos]->n_sementes);
-	printf("\n-- planta removida 2: %s, %s, %d --\n", removida->ID, removida->nome_cientifico, removida->n_sementes);
-
 	//decrementar o tamanho do vetor
 	c->tamanho--;
 	//a planta a remover não está na última posição, é necessário trocar
 	if (pos != c->tamanho)
 		swap_plantas(&c->plantas[pos], &c->plantas[c->tamanho]);
 
-	planta_apaga(c->plantas[pos]);
-	c->plantas[pos] = NULL;
+	//remover a planta do final
+	planta_apaga(c->plantas[c->tamanho]);
+	c->plantas[c->tamanho] = NULL;
+
+	// printf("\n-- planta swapped: %s, %s, %d --\n", c->plantas[c->tamanho]->ID, c->plantas[c->tamanho]->nome_cientifico, c->plantas[c->tamanho]->n_sementes);
 
 	//realoca o espaço do vetor para 1 elemento a menos;
 	c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho));
@@ -481,7 +483,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 	return NULL;
 }
 
-int colecao_reordena(colecao *c, const char *tipo_ordem) //! precisa de revisão
+int colecao_reordena(colecao *c, const char *tipo_ordem)
 {
 	if (!c)
 		return -1;
@@ -494,7 +496,6 @@ int colecao_reordena(colecao *c, const char *tipo_ordem) //! precisa de revisão
 
 	//Algoritmo de ordenação da coleção baseado no qsort da stdlib de C
 	//De acordo com o tipo de ordenação da coleção, o qsort é chamado com a função key adequada
-	//! perguntar se a verificação dos argumentos tem de ser case sensitive ou não
 	return colecao_ordena(c, tipo_ordem);
 }
 

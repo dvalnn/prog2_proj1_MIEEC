@@ -9,22 +9,6 @@
 #include <string.h>
 #include "plantas.h"
 
-void printcol(colecao c)
-{
-    for (int i = 0; i < c.tamanho; i++)
-    {
-        printf("\nplanta %d/%ld\n", i + 1, c.tamanho);
-        printf("\tID: %s\n", c.plantas[i]->ID);
-        printf("\tnome: %s\n", c.plantas[i]->nome_cientifico);
-        printf("\tsementes: %d\n", c.plantas[i]->n_sementes);
-        printf("\tAlcunhas: %d\n", c.plantas[i]->n_alcunhas);
-
-        for (int j = 0; j < c.plantas[i]->n_alcunhas; j++)
-            printf("\t\t---%s\n", c.plantas[i]->alcunhas[j]);
-    }
-    printf("\n");
-}
-
 /* VERIFICACOES IMPLEMENTADAS */
 int verifica_planta_nova(planta **p, const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
 {
@@ -179,7 +163,6 @@ int verifica_planta_insere(colecao **c)
     if ((*c)->plantas[0]->n_alcunhas != 2)
     {
         printf("...verifica_planta_insere: n_alcunhas da 1ª planta (= %d) 'e diferente do esperado (= 2) (ERRO)\n", (*c)->plantas[0]->n_alcunhas);
-        printcol(**c);
         er++;
     }
     else
@@ -204,7 +187,6 @@ int verifica_colecao_importa(colecao **c, const char *ficheiro)
     printf("Importando colecao...\n");
 
     *c = colecao_importa(ficheiro, "id");
-    printcol(**c);
 
     if (*c == NULL)
     {
