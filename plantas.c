@@ -119,41 +119,50 @@ int colecao_ordena(colecao *c, const char *tipo_ordem)
  * 
  * @param old apontador com os dados antigos a serem atualizados
  * @param new apontador com os novos dados
- * @return planta* - apontador old* com os dados atualizados, NULL se ocorrer algum erro
+ * @return int: -1 se ocorrer erro, caso contrário devolve 1 
  */
-planta *planta_atualiza(planta *old, planta *new)
+int planta_atualiza(planta *old, planta *new)
 {
 	// o mesmo que old == NULL
 	if (!old || !new)
-		return NULL;
+		return -1;
 
 	//atualizar numero de sementes
 	old->n_sementes += new->n_sementes;
+
+	//Não há novas alcunhas
 	if (old->n_alcunhas == new->n_alcunhas)
-		return old;
+		return 1;
 
-	//atualizar n_alcunhas
-	old->n_alcunhas += new->n_alcunhas;
+	//alocar espaço no vetor alcunhas para os novos char*
+	old->alcunhas = (char **)realloc(old->alcunhas, sizeof(old->alcunhas) * new->n_alcunhas);
+	if (!checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
+		return -1;
 
-	//atualizar alcunhas
-	for (int i = 0; i < old->n_alcunhas; i++)
-		if (strcmp(old->alcunhas[i], new->alcunhas[i]))
-		{
-			old->alcunhas[i] = (char *)realloc(old->alcunhas[i], strlen(new->alcunhas[i]) + 1);
-			if (!checkPtr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
-				return NULL;
-			strcpy(old->alcunhas[i], new->alcunhas[i]);
-		}
-
-	for (int i = old->n_alcunhas; i < new->n_alcunhas; i++)
+	for (int i = 0; i < new->n_alcunhas; i++)
 	{
-		old->alcunhas[i] = (char *)calloc(1, strlen(new->alcunhas[i]) + 1);
-		if (!checkPtr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
-			return NULL;
-		strcpy(old->alcunhas[i], new->alcunhas[i]);
+		char novaAlcunha = TRUE;
+		for (int j = 0; j < old->n_alcunhas; j++)
+		{
+			//se a alcunha existir, flag = FALSE
+			if (!strcmp(new->alcunhas[i], old->alcunhas[j]))
+			{
+				novaAlcunha = FALSE;
+				break;
+			}
+		}
+		//adicionar nova alcunha ao vetor
+		if (novaAlcunha)
+		{
+			old->alcunhas[old->n_alcunhas] = (char *)calloc(1, strlen(new->alcunhas[i]) + 1);
+			if (!checkPtr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
+				return -1;
+			strcpy(old->alcunhas[old->n_alcunhas], new->alcunhas[i]);
+			old->n_alcunhas++;
+		}
 	}
-
-	return old;
+	old->n_alcunhas = new->n_alcunhas;
+	return 1;
 }
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes)
@@ -236,27 +245,7 @@ int planta_insere(colecao *c, planta *p)
 	int pos = 0;
 	// planta existe, só necessita de ser atualizada.
 	if ((pos = colecao_pesquisa(c, p->ID)) != -1)
-	{
-		//cópia dos dados antigos
-		planta *copy = planta_nova(c->plantas[pos]->ID,
-								   c->plantas[pos]->nome_cientifico,
-								   c->plantas[pos]->alcunhas,
-								   c->plantas[pos]->n_alcunhas,
-								   c->plantas[pos]->n_sementes);
-
-		if (!checkPtr(copy, MEMORY_ALOC_ERROR_MSG, str(copy)))
-			return -1;
-		//atualização dos dados usando a cópia
-		copy = planta_atualiza(copy, p);
-		if (!checkPtr(copy, MEMORY_ALOC_ERROR_MSG, str(copy)))
-			return -1;
-
-		//caso não tenha havido erros apagar a planta antiga
-		planta_apaga(c->plantas[pos]);
-		//introduzir a planta atualizada na coleção
-		c->plantas[pos] = copy;
-		return 1;
-	}
+		return planta_atualiza(c->plantas[pos], p);
 
 	//planta nao existe, é necessário inserir na posição certa.
 	//alocar memória para vetor com 1 elemento extra
