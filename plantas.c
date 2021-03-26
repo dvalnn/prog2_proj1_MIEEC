@@ -327,14 +327,14 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 		return NULL;
 	}
 
-	// * %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
-	// * %*c lê e discarta o char "," que é usado para separar as strings.
 	char flag;
 	int n_alcunhas;
 	char **alcunhas = (char **)calloc(MAX_ALCUNHAS, sizeof(*alcunhas));
 	char aux[MAX_NAME / 2] = {0};
 	int linha = 0;
 
+	// %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
+	// %*c lê e discarta o char "," que é usado para separar as strings.
 	while (fscanf(file, "%9[^,] %*c %199[^,] %*c %d%c", id, nome, &n_sementes, &flag) == 4)
 	{
 		n_alcunhas = 0;
@@ -411,8 +411,6 @@ planta *planta_remove(colecao *c, const char *nomep)
 	planta_apaga(c->plantas[c->tamanho]);
 	c->plantas[c->tamanho] = NULL;
 
-	// printf("\n-- planta swapped: %s, %s, %d --\n", c->plantas[c->tamanho]->ID, c->plantas[c->tamanho]->nome_cientifico, c->plantas[c->tamanho]->n_sementes);
-
 	//realoca o espaço do vetor para 1 elemento a menos;
 	c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho));
 	if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
@@ -475,7 +473,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 
 	for (int i = 0; i < c->tamanho; i++)
 	{
-		if (strstr(c->plantas[i]->nome_cientifico, nomep))
+		if (strcmp(c->plantas[i]->nome_cientifico, nomep))
 		{
 			posicoes[*tam] = i;
 			(*tam)++;
@@ -484,7 +482,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 		if (c->plantas[i]->n_alcunhas != 0)
 		{
 			for (int j = 0; j < c->plantas[i]->n_alcunhas; i++)
-				if (strstr(c->plantas[i]->alcunhas[j], nomep))
+				if (strcmp(c->plantas[i]->alcunhas[j], nomep))
 				{
 					posicoes[*tam] = i;
 					(*tam)++;
