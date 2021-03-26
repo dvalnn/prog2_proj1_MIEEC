@@ -4,8 +4,9 @@
 
 /**
  * @file plantas.h
- * @author Tiago Amorim (up202004720@edu.fe.up.pt) Lucas Freitas (up202006938@edu.fe.up.pt)
- * @brief implementação das funções da biblioteca plantas.h
+ * @author Tiago Amorim  (up202004720@edu.fe.up.pt | https://github.com/dvalnn/prog2_proj1_MIEEC) 
+           Lucas Freitas (up202006938@edu.fe.up.pt | )
+ * @brief implementação das funções da biblioteca plantas.h - grupo g209
  * @date 2021-03-21
  * 
  */
@@ -44,6 +45,36 @@
  * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
  */
 int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
+    // int lower = 0;                      // limite inferior do vetor
+    // int upper = haystack->tamanho - 1;  // limite superior do vetor
+    // int current;
+    // int diff;  // resultado da comparação entre string
+    // printf("\n\nA pesquisar por:%s\n\n", needle);
+    // while (lower <= upper) {
+    //     current = (lower + upper) / 2;
+
+    //     if (tipo_pesquisa)
+    //         diff = strcmp(haystack->plantas[current]->nome_cientifico, needle);
+    //     else
+    //         diff = strcmp(haystack->plantas[current]->ID, needle);
+
+    //     if (diff == 0) {
+    //         printf("\n\nAQUIII 000\n\n");
+    //         return current;
+    //     }
+
+    //     else if (diff < 0) {
+    //         upper = current - 1;
+    //         // printf("\n\nAQUI 1\n\n");
+    //     }
+
+    //     else {
+    //         lower = current + 1;
+    //         // printf("\n\nAQUIII 2\n\n");
+    //     }
+    // }
+    // return -1;  // não encontrado
+
     if (tipo_pesquisa) {
         for (int i = 0; i < haystack->tamanho; i++)
             if (!strcasecmp(haystack->plantas[i]->nome_cientifico, needle))
@@ -100,7 +131,7 @@ int qsortKey_nome(const void *a, const void *b) {
     const planta *pa = *(planta **)a;
     const planta *pb = *(planta **)b;
     //valor do strcmp multilicado por -1 para que a ordenação seja decrescente
-    return -strcmp(pb->nome_cientifico, pa->nome_cientifico);
+    return strcmp(pa->nome_cientifico, pb->nome_cientifico);
 }
 
 /**
@@ -142,9 +173,6 @@ void swap_plantas(planta **a, planta **b) {
  * @return int: -1 se ocorrer erro, caso contrário devolve 1 
  */
 int planta_atualiza(planta *old, planta *new) {
-    // o mesmo que old == NULL
-    if (!old || !new)
-        return -1;
 
     //atualizar numero de sementes
     old->n_sementes += new->n_sementes;
