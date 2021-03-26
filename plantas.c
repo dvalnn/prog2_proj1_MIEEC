@@ -44,29 +44,40 @@
  * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
  */
 int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
-    int lower = 0;                      // limite inferior do vetor
-    int upper = haystack->tamanho - 1;  // limite superior do vetor
-    int current;
-    int diff;  // resultado da comparação entre string
+    // int lower = 0;                      // limite inferior do vetor
+    // int upper = haystack->tamanho - 1;  // limite superior do vetor
+    // int current;
+    // int diff;  // resultado da comparação entre string
 
-    while (lower <= upper) {
-        current = (lower + upper) / 2;
+    // while (lower <= upper) {
+    //     current = (lower + upper) / 2;
 
-        if (tipo_pesquisa)
-            diff = strcasecmp(haystack->plantas[current]->nome_cientifico, needle);
-        else
-            diff = strcasecmp(haystack->plantas[current]->ID, needle);
+    //     if (tipo_pesquisa)
+    //         diff = strcasecmp(haystack->plantas[current]->nome_cientifico, needle);
+    //     else
+    //         diff = strcasecmp(haystack->plantas[current]->ID, needle);
 
-        if (!diff)
-            return current;
+    //     if (!diff)
+    //         return current;
 
-        if (diff < 0)
-            upper = current - 1;
+    //     if (diff < 0)
+    //         upper = current - 1;
 
-        else
-            lower = current + 1;
+    //     else
+    //         lower = current + 1;
+    // }
+    // return -1;  // não encontrado
+
+    if (tipo_pesquisa) {
+        for (int i = 0; i < haystack->tamanho; i++)
+            if (!strcasecmp(haystack->plantas[i]->nome_cientifico, needle))
+                return i;
+    } else {
+        for (int i = 0; i < haystack->tamanho; i++)
+            if (!strcasecmp(haystack->plantas[i]->ID, needle))
+                return i;
     }
-    return -1;  // não encontrado
+    return -1;
 }
 
 /**
@@ -171,6 +182,7 @@ int planta_atualiza(planta *old, planta *new) {
     if (checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
         return -1;
 
+    //precorrer o vetor com as novas alcunhas
     for (int i = 0; i < new->n_alcunhas; i++) {
         int novaAlcunha = TRUE;
         for (int j = 0; j < old->n_alcunhas; j++) {
@@ -346,10 +358,14 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
 
         if (checkPtr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
             printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
-        else if (planta_insere(importada, nova) == -1) {
-            printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
-            free(nova);
+        else {
+            char tmp = planta_insere(importada, nova);
+            if (tmp == -1)
+                printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+            // if (!tmp)
+            //     planta_apaga(nova);
         }
+        planta_apaga(nova);
     }
     free(alcunhas);
     colecao_ordena(importada, importada->tipo_ordem);
