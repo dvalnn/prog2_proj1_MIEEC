@@ -62,7 +62,7 @@ int colecao_pesquisa(const colecao *haystack, const char *needle, const char tip
  * @param ptr pointer a verificar
  * @param msg mensagem de erro a imprimir caso ptr seja NULL
  * @param ptrName nome do ptr a imprimir com a mensagem de erro
- * @return int - 1 se ocorrer um erro, senão retorna 0
+ * @return int 1 se ocorrer um erro, senão retorna 0
  */
 int checkPtr(void *ptr, const char *msg, const char *ptrName) {
     if (!ptr) {
@@ -78,8 +78,7 @@ int checkPtr(void *ptr, const char *msg, const char *ptrName) {
  * 
  * @param a planta "a" a ser comparadada
  * @param b planta "b" a ser comparada
- * @return true a->ID > b->ID
- * @return false a->ID < b->ID
+ * @return strcmp(a, b)
  */
 int qsortKey_ID(const void *a, const void *b) {
     //cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
@@ -94,8 +93,7 @@ int qsortKey_ID(const void *a, const void *b) {
  * 
  * @param a planta "a" a ser comparada
  * @param b planta "b" a ser comparada
- * @return true a->nome_cientifico > b->nome_cientifico
- * @return false a->nome_cientifico <= b->nome_cientifico
+ * @return -strcmp(a, b)
  */
 int qsortKey_nome(const void *a, const void *b) {
     //cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
@@ -110,7 +108,7 @@ int qsortKey_nome(const void *a, const void *b) {
  * 
  * @param c Coleção a ordenar
  * @param tipo_ordem Ordem a ser introduzida na coleção
- * @return int -1 se ocorrer erro, senão retorna 1
+ * @return int 1 se ocorrer erro, senão retorna 0
  */
 int colecao_ordena(colecao *c, const char *tipo_ordem) {
     if (!strcasecmp(tipo_ordem, "id"))
@@ -342,12 +340,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
     }
     free(alcunhas);
     colecao_ordena(importada, importada->tipo_ordem);
-
-    // printf("\tAlcunhas: %d\n", importada->plantas[420]->n_alcunhas);
-
-    // for (int j = 0; j < importada->plantas[420]->n_alcunhas; j++)
-    // 	printf("\t\t---%s\n", importada->plantas[420]->alcunhas[j]);
-
+	
     fclose(file);
     file = NULL;
     return importada;
