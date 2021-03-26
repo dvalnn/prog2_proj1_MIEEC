@@ -303,7 +303,7 @@ int planta_insere(colecao *c, planta *p)
 
 int colecao_tamanho(colecao *c)
 {
-	if (c != NULL)
+	if (!c)
 		return c->tamanho;
 	return -1;
 }
