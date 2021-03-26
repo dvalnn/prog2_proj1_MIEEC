@@ -173,12 +173,10 @@ void swap_plantas(planta **a, planta **b) {
  * @return int: -1 se ocorrer erro, caso contrário devolve 1 
  */
 int planta_atualiza(planta *old, planta *new) {
-
     //atualizar numero de sementes
     old->n_sementes += new->n_sementes;
 
-    //Não há novas alcunhas
-    if (old->n_alcunhas == new->n_alcunhas)
+    if (!new->n_alcunhas)
         return 1;
 
     //alocar espaço no vetor alcunhas para os novos char*, é alocado espaço em excesso para facilitar a atualização
@@ -207,7 +205,7 @@ int planta_atualiza(planta *old, planta *new) {
             old->n_alcunhas++;
         }
     }
-
+    //realocar o vetor com o tamanho certo
     old->alcunhas = (char **)realloc(old->alcunhas, sizeof(old->alcunhas) * old->n_alcunhas);
     if (checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
         return -1;
@@ -235,7 +233,7 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
     //Não existem alcunhas - retorna nova planta com novaPlanta->alcunhas = NULL
     if (!alcunhas || !n_alcunhas)
         return novaPlanta;
-
+    //existem alcunhas, aloca espaço para o vetor **alcunhas
     novaPlanta->alcunhas = (char **)calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
 
     for (int i = 0; i < novaPlanta->n_alcunhas; i++) {
