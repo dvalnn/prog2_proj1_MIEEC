@@ -303,7 +303,7 @@ int planta_insere(colecao *c, planta *p)
 
 int colecao_tamanho(colecao *c)
 {
-	if (!c)
+	if (c)
 		return c->tamanho;
 	return -1;
 }
@@ -473,7 +473,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 
 	for (int i = 0; i < c->tamanho; i++)
 	{
-		if (strcmp(c->plantas[i]->nome_cientifico, nomep))
+		if (!strcmp(c->plantas[i]->nome_cientifico, nomep))
 		{
 			posicoes[*tam] = i;
 			(*tam)++;
@@ -482,7 +482,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 		if (c->plantas[i]->n_alcunhas != 0)
 		{
 			for (int j = 0; j < c->plantas[i]->n_alcunhas; i++)
-				if (strcmp(c->plantas[i]->alcunhas[j], nomep))
+				if (!strcmp(c->plantas[i]->alcunhas[j], nomep))
 				{
 					posicoes[*tam] = i;
 					(*tam)++;
