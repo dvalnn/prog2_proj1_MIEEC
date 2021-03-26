@@ -12,8 +12,8 @@
 
 void printcol(colecao c)
 {
-    for (int i = 0; i < c.tamanho; i++)
-    {
+    printf("\n-- tipo ordem : %s --\n", c.tipo_ordem);
+    for (int i = 0; i < c.tamanho; i++) {
         printf("\nplanta %d/%ld\n", i + 1, c.tamanho);
         printf("\tID: %s\n", c.plantas[i]->ID);
         printf("\tnome: %s\n", c.plantas[i]->nome_cientifico);
@@ -185,7 +185,6 @@ int verifica_colecao_importa(colecao **c, const char *ficheiro) {
         er++;
     } else
         printf("...verifica_colecao_importa: IDs da 1ª e 'ultima posicoes da colecao coincidem com o esperado (ACAL3 e YUSM) (ok)\n");
-
     return er;
 }
 int verifica_planta_remove(colecao *c) {
@@ -352,8 +351,7 @@ int main() {
         printf("OK: verifica_colecao_reordena passou\n\n");
     }
 
-    // printcol(*c1);
-
+ 
     colecao_apaga(c);
     colecao_apaga(c1);
 

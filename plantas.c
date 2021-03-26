@@ -37,54 +37,87 @@
 #define MAX_ALCUNHAS 10
 
 /**
- * @brief pesquisa a posição da planta na string usando o algoritmo iterativo de pesquisa binária
+ * @brief 
  * 
  * @param haystack 
- * @param needle ID da planta a pesquisar na string
- * @param tipo_pesquisa 0 para pesquisar pelo ID, 1 para pesquisar pelo nome
- * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
+ * @param needle 
+ * @param tipo_pesquisa 
+ * @return int 
  */
-int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
-    // int lower = 0;                      // limite inferior do vetor
-    // int upper = haystack->tamanho - 1;  // limite superior do vetor
-    // int current;
-    // int diff;  // resultado da comparação entre string
-    // printf("\n\nA pesquisar por:%s\n\n", needle);
-    // while (lower <= upper) {
-    //     current = (lower + upper) / 2;
+int binSearch(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
+    int lower = 0;                      // limite inferior do vetor
+    int upper = haystack->tamanho - 1;  // limite superior do vetor
+    int current;
+    int diff;  // resultado da comparação entre string
 
-    //     if (tipo_pesquisa)
-    //         diff = strcmp(haystack->plantas[current]->nome_cientifico, needle);
-    //     else
-    //         diff = strcmp(haystack->plantas[current]->ID, needle);
+    while (lower <= upper) {
+        current = (lower + upper) / 2;
 
-    //     if (diff == 0) {
-    //         printf("\n\nAQUIII 000\n\n");
-    //         return current;
-    //     }
+        if (tipo_pesquisa == PESQUISA_NOME)
+            diff = strcmp(haystack->plantas[current]->nome_cientifico, needle);
+        else
+            //-strcmp visto que ordenação por ID é decrescente
+            diff = strcmp(haystack->plantas[current]->ID, needle);
 
-    //     else if (diff < 0) {
-    //         upper = current - 1;
-    //         // printf("\n\nAQUI 1\n\n");
-    //     }
+        if (diff == 0) {
+            return current;
+        }
 
-    //     else {
-    //         lower = current + 1;
-    //         // printf("\n\nAQUIII 2\n\n");
-    //     }
-    // }
-    // return -1;  // não encontrado
+        else if (diff > 0) {
+            upper = current - 1;
+        }
 
-    if (tipo_pesquisa) {
+        else {
+            lower = current + 1;
+        }
+    }
+    return -1;  // não encontrado
+}
+
+/**
+ * @brief 
+ *
+ * @param haystack 
+ * @param needle ID ou nome a pesquisar na string
+ * @param tipo_pesquisa 0 para pesquisar por ID, 1 para pesquisar por nome
+ * @return int retorna a posição da planta se existir,senão retorna -1
+ */
+int lSearch(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
+    if (tipo_pesquisa == PESQUISA_NOME) {
         for (int i = 0; i < haystack->tamanho; i++)
-            if (!strcasecmp(haystack->plantas[i]->nome_cientifico, needle))
+            if (!strcmp(haystack->plantas[i]->nome_cientifico, needle))
                 return i;
     } else {
         for (int i = 0; i < haystack->tamanho; i++)
-            if (!strcasecmp(haystack->plantas[i]->ID, needle))
+            if (!strcmp(haystack->plantas[i]->ID, needle))
                 return i;
     }
     return -1;
+}
+
+/**
+ * @brief 
+ * 
+ * @param haystack 
+ * @param needle 
+ * @param tipo_pesquisa 
+ * @return int 
+ */
+int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
+    char sorted = FALSE;
+
+    //verificação de se o tipo de ordenação coincide com o tipo de pesquisa desejado
+    if (tipo_pesquisa == PESQUISA_ID) {
+        if (!strcasecmp(haystack->tipo_ordem, "id"))
+            sorted = TRUE;
+    } else if (!strcasecmp(haystack->tipo_ordem, "nome"))
+        sorted = TRUE;
+
+    //caso os tipos de ordenação coincidam, utilizar pesquisa binária, senão pesquisa linear
+    if (sorted)
+        return binSearch(haystack, needle, tipo_pesquisa);
+    else
+        return lSearch(haystack, needle, tipo_pesquisa);
 }
 
 /**
@@ -124,7 +157,7 @@ int qsortKey_ID(const void *a, const void *b) {
  * 
  * @param a planta "a" a ser comparada
  * @param b planta "b" a ser comparada
- * @return -strcmp(a, b)
+ * @return strcmp(a, b)
  */
 int qsortKey_nome(const void *a, const void *b) {
     //cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
@@ -285,6 +318,7 @@ int planta_insere(colecao *c, planta *p) {
 
     int pos = 0;
     // planta existe, só necessita de ser atualizada.
+
     if ((pos = colecao_pesquisa(c, p->ID, PESQUISA_ID)) != -1)
         return planta_atualiza(c->plantas[pos], p);
 
