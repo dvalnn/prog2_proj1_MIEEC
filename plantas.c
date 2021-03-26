@@ -34,7 +34,7 @@
 #define PESQUISA_NOME 1
 
 #define MAX_ALCUNHAS 10
-//TODO: melhorar caso haja tempo :) - adicionar pesquisa binária
+
 /**
  * @brief pesquisa a posição da planta na string
  * 
@@ -340,7 +340,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
     }
     free(alcunhas);
     colecao_ordena(importada, importada->tipo_ordem);
-	
+
     fclose(file);
     file = NULL;
     return importada;
