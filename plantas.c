@@ -315,11 +315,15 @@ int planta_insere(colecao *c, planta *p) {
         c->plantas[0] = p;
         return 0;
     }
-
+    //verificar a existência da planta. Para que seja possivel utilizar pesquisa binária chama a função de pesquisa com os argumentos adequados
     int pos = 0;
-    // planta existe, só necessita de ser atualizada.
+    if (!strcasecmp(c->tipo_ordem, "id"))
+        pos = colecao_pesquisa(c, p->ID, PESQUISA_ID);
+    else
+        pos = colecao_pesquisa(c, p->nome_cientifico, PESQUISA_NOME);
 
-    if ((pos = colecao_pesquisa(c, p->ID, PESQUISA_ID)) != -1)
+    // planta existe, só necessita de ser atualizada.
+    if (pos != -1)
         return planta_atualiza(c->plantas[pos], p);
 
     //planta nao existe, é necessário inserir na posição certa.
