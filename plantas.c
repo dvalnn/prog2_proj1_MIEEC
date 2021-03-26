@@ -36,7 +36,7 @@
 #define MAX_ALCUNHAS 10
 
 /**
- * @brief pesquisa a posição da planta na string
+ * @brief pesquisa a posição da planta na string usando o algoritmo iterativo de pesquisa binária
  * 
  * @param haystack 
  * @param needle ID da planta a pesquisar na string
@@ -44,16 +44,29 @@
  * @return int retorna a posição da planta no vetor se a planta existir, senão retorna -1
  */
 int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
-    if (tipo_pesquisa) {
-        for (int i = 0; i < haystack->tamanho; i++)
-            if (!strcasecmp(haystack->plantas[i]->nome_cientifico, needle))
-                return i;
-    } else {
-        for (int i = 0; i < haystack->tamanho; i++)
-            if (!strcasecmp(haystack->plantas[i]->ID, needle))
-                return i;
+    int lower = 0;                      // limite inferior do vetor
+    int upper = haystack->tamanho - 1;  // limite superior do vetor
+    int current;
+    int diff;  // resultado da comparação entre string
+
+    while (lower <= upper) {
+        current = (lower + upper) / 2;
+
+        if (tipo_pesquisa)
+            diff = strcasecmp(haystack->plantas[current]->nome_cientifico, needle);
+        else
+            diff = strcasecmp(haystack->plantas[current]->ID, needle);
+
+        if (!diff)
+            return current;
+
+        if (diff < 0)
+            upper = current - 1;
+
+        else
+            lower = current + 1;
     }
-    return -1;
+    return -1;  // não encontrado
 }
 
 /**
