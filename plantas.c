@@ -383,15 +383,6 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem)
 	free(alcunhas);
 	colecao_ordena(importada, importada->tipo_ordem);
 
-	printf("\n--- %s %s sementes: %d alcunhas: %d ---\n",
-		   importada->plantas[420]->ID,
-		   importada->plantas[420]->nome_cientifico,
-		   importada->plantas[420]->n_sementes,
-		   importada->plantas[420]->n_alcunhas);
-
-	for (int i = 0; i < importada->plantas[420]->n_alcunhas; i++)
-		printf("\t\t%s\n", importada->plantas[420]->alcunhas[i]);
-
 	fclose(file);
 	file = NULL;
 	return importada;
@@ -479,8 +470,39 @@ int colecao_apaga(colecao *c)
 
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam)
 {
+	if (!c)
+		return NULL;
 
-	return NULL;
+	int *posicoes = calloc(c->tamanho, sizeof(*posicoes));
+	*tam = 0;
+
+	for (int i = 0; i < c->tamanho; i++)
+	{
+		if (strstr(c->plantas[i]->nome_cientifico, nomep))
+		{
+			posicoes[*tam] = i;
+			(*tam)++;
+			continue;
+		}
+		if (c->plantas[i]->n_alcunhas != 0)
+		{
+			for (int j = 0; j < c->plantas[i]->n_alcunhas; i++)
+				if (strstr(c->plantas[i]->alcunhas[j], nomep))
+				{
+					posicoes[*tam] = i;
+					(*tam)++;
+					continue;
+				}
+		}
+	}
+
+	if (!(*tam))
+	{
+		free(posicoes);
+		return NULL;
+	}
+	else
+		return posicoes;
 }
 
 int colecao_reordena(colecao *c, const char *tipo_ordem)
