@@ -27,22 +27,22 @@
 #define PLANTA_CREATION_ERROR_MSG "\n[ERRO] - Falha ao criar a planta\n"
 
 // * macros para evitar incluir <stdbool.h> desnecessariamente
-#define TRUE 1
 #define FALSE 0
+#define TRUE 1
 
 // * flags para função colecao_pesquisa
 #define PESQUISA_ID 0
 #define PESQUISA_NOME 1
 
-#define MAX_ALCUNHAS 10
+#define MAX_ALCUNHAS 50
 
 /**
- * @brief 
+ * @brief pesquisa binária
  * 
- * @param haystack 
- * @param needle 
- * @param tipo_pesquisa 
- * @return int 
+ * @param haystack colecao a precorrer
+ * @param needle nome ou id da planta a encontrar na colecao
+ * @param tipo_pesquisa flag para o tipo de pesquisa a ser feita
+ * @return int posição do elemento encontrado ou -1 caso não exista
  */
 int binSearch(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
     int lower = 0;                      // limite inferior do vetor
@@ -56,52 +56,49 @@ int binSearch(const colecao *haystack, const char *needle, const char tipo_pesqu
         if (tipo_pesquisa == PESQUISA_NOME)
             diff = strcmp(haystack->plantas[current]->nome_cientifico, needle);
         else
-            //-strcmp visto que ordenação por ID é decrescente
             diff = strcmp(haystack->plantas[current]->ID, needle);
 
         if (diff == 0) {
             return current;
         }
-
+        // diff > 0 visto que as coleções estão ordenadas alfabeticamente e A < Z
         else if (diff > 0) {
-            upper = current - 1;
+            upper = current - 1;  //descartar metade superior do vetor
         }
 
         else {
-            lower = current + 1;
+            lower = current + 1;  //descartar metade inferior do vetor
         }
     }
     return -1;  // não encontrado
 }
 
 /**
- * @brief 
+ * @brief pesquisa linear
  *
- * @param haystack 
- * @param needle ID ou nome a pesquisar na string
+ * @param haystack colecao a precorrer
+ * @param needle nome ou id da planta a encontrar na colecao
  * @param tipo_pesquisa 0 para pesquisar por ID, 1 para pesquisar por nome
- * @return int retorna a posição da planta se existir,senão retorna -1
+ * @return int posição do planta encontrada ou -1 caso não exista
  */
 int lSearch(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
-    if (tipo_pesquisa == PESQUISA_NOME) {
-        for (int i = 0; i < haystack->tamanho; i++)
+    for (int i = 0; i < haystack->tamanho; i++) {
+        if (tipo_pesquisa == PESQUISA_NOME) {
             if (!strcmp(haystack->plantas[i]->nome_cientifico, needle))
                 return i;
-    } else {
-        for (int i = 0; i < haystack->tamanho; i++)
-            if (!strcmp(haystack->plantas[i]->ID, needle))
-                return i;
+        } else if (!strcmp(haystack->plantas[i]->ID, needle))
+            return i;
     }
     return -1;
 }
 
 /**
- * @brief 
+ * @brief Pesquisa a coleção com o algoritmo de pesquisa adequado (pesquisa linear ou binária) 
  * 
- * @param haystack 
- * @param needle 
- * @param tipo_pesquisa 
- * @return int 
+ * @param haystack colecao a precorrer
+ * @param needle nome ou id da planta a encontrar na colecao
+ * @param tipo_pesquisa 0 para pesquisar por ID, 1 para pesquisar por nome
+ * @return int posição do planta encontrada ou -1 caso não exista
  */
 int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
     char sorted = FALSE;
@@ -121,7 +118,7 @@ int colecao_pesquisa(const colecao *haystack, const char *needle, const char tip
 }
 
 /**
- * @brief verifica se o pointer é NULL e termina o programa caso a condição se verifique
+ * @brief imprime uma mensagem de erro passada como argumento e retorna True caso o pointer passado seja NULL
  * 
  * @param ptr pointer a verificar
  * @param msg mensagem de erro a imprimir caso ptr seja NULL
@@ -132,9 +129,9 @@ int checkPtr(void *ptr, const char *msg, const char *ptrName) {
     if (!ptr) {
         printf("%s", msg);
         printf("\n[INFO] - Erro originado por: \"%s\"\n", ptrName);
-        return 1;
+        return TRUE;
     }
-    return 0;
+    return FALSE;
 }
 
 /**
@@ -199,7 +196,7 @@ void swap_plantas(planta **a, planta **b) {
 }
 
 /**
- * @brief 
+ * @brief atualiza uma planta existente na coleção com novas sementes e/ou alcunhas
  * 
  * @param old apontador com os dados antigos a serem atualizados
  * @param new apontador com os novos dados
@@ -315,7 +312,9 @@ int planta_insere(colecao *c, planta *p) {
         c->plantas[0] = p;
         return 0;
     }
-    //verificar a existência da planta. Para que seja possivel utilizar pesquisa binária chama a função de pesquisa com os argumentos adequados
+    //verificar a existência da planta.
+    //strcasecmp utilizados para verificar qual o tipo de ordenação da coleção e chamar coleção_pesquisa 
+    //com o método de pesquisa mais rápido
     int pos = 0;
     if (!strcasecmp(c->tipo_ordem, "id"))
         pos = colecao_pesquisa(c, p->ID, PESQUISA_ID);
@@ -326,17 +325,15 @@ int planta_insere(colecao *c, planta *p) {
     if (pos != -1)
         return planta_atualiza(c->plantas[pos], p);
 
-    //planta nao existe, é necessário inserir na posição certa.
+    //planta nao existe, é necessário inserir no final e reordenar o vetor.
     //alocar memória para vetor com 1 elemento extra
     c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho + 1));
     if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
         return -1;
 
-    //inserir na última posição
     c->plantas[c->tamanho] = p;
     c->tamanho += 1;
 
-    // ordenar as plantas --- acaba
     colecao_ordena(c, c->tipo_ordem);
 
     return 0;
@@ -354,10 +351,12 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
     if (file == NULL)
         return NULL;
 
+    //declaração e inicialização de variáveis auxiliares
     char id[10] = {'\0'};
     char nome[MAX_NAME] = {'\0'};
     int n_sementes = 0;
 
+    //criação de uma nova coleção vazia
     colecao *importada = colecao_nova(tipo_ordem);
     if (checkPtr(importada, COLECAO_CREATION_ERROR_MSG, str(colecao))) {
         fclose(file);
@@ -365,11 +364,16 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
         return NULL;
     }
 
+    //mais algumas variáveis auxiliares, flag guarda o character lido imediatamente após o número de sementes
     char flag;
-    int n_alcunhas;
-    char **alcunhas = (char **)calloc(MAX_ALCUNHAS, sizeof(*alcunhas));
-    char aux[MAX_NAME / 2] = {0};
     int linha = 0;
+    int n_alcunhas;
+    //vetor auxiliar para usar com scanf
+    char aux[MAX_NAME / 2] = {0};
+
+    //alocar memória para vetor alcunhas auxiliar para guardar as alcunhas lidas -- vetor alocado para o máximo definido de alcunhas
+    //para reduzir a quantidade total de operações de alocação de memória
+    char **alcunhas = (char **)calloc(MAX_ALCUNHAS, sizeof(*alcunhas));
 
     // %9[^,] e  %199[^,] leem tudo até encontrar uma "," para um field with máximo de 9 e 199 char, respetivamente.
     // %*c lê e discarta o char "," que é usado para separar as strings.
@@ -381,14 +385,20 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
         // há alcunhas
         if (flag == ',') {
             // >= 1 em vez de == 2, caso não haja \n ou espaço após o valor final do ficheiro
+            // nesta situação fscanf recebe EOF após ler a alcunha de modo que retorna 1 em vez de 2
             while (fscanf(file, "%99[^,\n]%c", aux, &flag) >= 1) {
                 alcunhas[n_alcunhas] = (char *)calloc(1, strlen(aux) + 1);
                 strcpy(alcunhas[n_alcunhas], aux);
                 n_alcunhas++;
+                //não há mais alcunhas a ler no ficheiro, ou o número máximo permitido foi alcançado
+                //no segundo caso, o comportamento do programa é indefinido
                 if (flag != ',' || n_alcunhas == MAX_ALCUNHAS)
                     break;
             }
+            //criação de uma planta nova com as informação lida do ficheiro
             nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
+            //libertação da memória em alocada no vetor,
+            //para não provocar problemas de memória na próxima iteração do loop
             for (int i = 0; i < n_alcunhas; i++) {
                 free(alcunhas[i]);
                 alcunhas[i] = NULL;
@@ -397,17 +407,19 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
             nova = planta_nova(id, nome, NULL, n_alcunhas, n_sementes);
 
         if (checkPtr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
-            printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+            printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada nem inserida no vetor com sucesso\n", id, nome, linha, nome_ficheiro);
         else {
+            //planta criada é inserida na coleção, caso seja repetida a planta antiga é atualizada e a nova é apagada
+            //em caso de erro, é imprimida uma mensagem de erro e a planta nova é apagada
             char tmp = planta_insere(importada, nova);
             if (tmp == -1)
-                printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada\n", id, nome, linha, nome_ficheiro);
+                printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi inserida no vetor com sucesso\n", id, nome, linha, nome_ficheiro);
             if (tmp)
                 planta_apaga(nova);
         }
     }
+    //libertação de memória do vetor **alcunhas alocado antes do loop ser iniciado
     free(alcunhas);
-    colecao_ordena(importada, importada->tipo_ordem);
 
     fclose(file);
     file = NULL;
@@ -492,16 +504,18 @@ int colecao_apaga(colecao *c) {
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam) {
     if (!c)
         return NULL;
-
+    //alocar memória para o vetor para guardar as posições encontradas
     int *posicoes = calloc(c->tamanho, sizeof(*posicoes));
     *tam = 0;
 
     for (int i = 0; i < c->tamanho; i++) {
+        //pesquisa linear da coleção para encontrar todas as ocorrências
         if (!strcmp(c->plantas[i]->nome_cientifico, nomep)) {
             posicoes[*tam] = i;
             (*tam)++;
             continue;
         }
+        //caso existam, pesquisa linear de todas as alcunhas da planta
         if (c->plantas[i]->n_alcunhas != 0) {
             for (int j = 0; j < c->plantas[i]->n_alcunhas; i++)
                 if (!strcmp(c->plantas[i]->alcunhas[j], nomep)) {
@@ -511,7 +525,8 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam) {
                 }
         }
     }
-
+    //caso não tenham sido encontradas quaisquer ocorrências
+    //libertar o espaço alocado para o vetor e retornar NULL
     if (!(*tam)) {
         free(posicoes);
         return NULL;
@@ -534,7 +549,7 @@ int colecao_reordena(colecao *c, const char *tipo_ordem) {
     return colecao_ordena(c, tipo_ordem);
 }
 
-//* undef dos macros criados para não passarem para os restantes ficheiros
+//* undefine dos macros criados para não afetarem para os restantes ficheiros
 #undef str
 
 #undef MEMORY_ALOC_ERROR_MSG
