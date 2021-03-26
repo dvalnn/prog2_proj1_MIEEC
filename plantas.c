@@ -17,15 +17,12 @@
 
 // * útil para dar print do nome do argumento c passado
 #define str(c) #c
-// * útil para calcular qual a string com menor tamanho para strncmp
-// #define min(a,b) a < b ? a : b
+
 // * mensagens de erro
 #define MEMORY_ALOC_ERROR_MSG "\n[ERRO] - Falha ao alocar memória.\n"
 #define PLANTA_UPDATE_ERROR_MSG "\n[ERRO]  - Falha ao atualizar a planta\n"
 #define COLECAO_CREATION_ERROR_MSG "\n[ERRO] - Falha ao criar a coleção\n"
 #define PLANTA_CREATION_ERROR_MSG "\n[ERRO] - Falha ao criar a planta\n"
-
-//!criar mais mensagens de erro :)
 
 // * macros para evitar incluir <stdbool.h> desnecessariamente
 #define TRUE 1
@@ -523,4 +520,16 @@ int colecao_reordena(colecao *c, const char *tipo_ordem)
 
 //* undef dos macros criados para não passarem para os restantes ficheiros
 #undef str
+
 #undef MEMORY_ALOC_ERROR_MSG
+#undef PLANTA_UPDATE_ERROR_MSG
+#undef COLECAO_CREATION_ERROR_MSG
+#undef PLANTA_CREATION_ERROR_MSG
+
+#undef TRUE
+#undef FALSE
+
+#undef PESQUISA_ID
+#undef PESQUISA_NOME
+
+#undef MAX_ALCUNHAS
