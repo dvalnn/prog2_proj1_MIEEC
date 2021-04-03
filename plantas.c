@@ -324,11 +324,14 @@ int planta_insere(colecao *c, planta *p) {
     //strcasecmp utilizados para verificar qual o tipo de ordenação da coleção e chamar coleção_pesquisa
     //com o método de pesquisa mais rápido
     int pos = 0;
-    if (!strcasecmp(c->tipo_ordem, "id"))
-        pos = colecao_pesquisa(c, p->ID, PESQUISA_ID);
-    else
-        pos = colecao_pesquisa(c, p->nome_cientifico, PESQUISA_NOME);
+    int search_param;
 
+    if (!strcasecmp(c->tipo_ordem, "id"))
+        search_param = PESQUISA_ID;
+    else
+        search_param = PESQUISA_NOME;
+
+    pos = colecao_pesquisa(c, p->ID, search_param);
     // planta existe, só necessita de ser atualizada.
     if (pos != -1)
         return planta_atualiza(c->plantas[pos], p);
@@ -398,6 +401,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
                 alcunhas[n_alcunhas] = (char *)calloc(1, strlen(aux) + 1);
                 strcpy(alcunhas[n_alcunhas], aux);
                 n_alcunhas++;
+
                 //não há mais alcunhas a ler no ficheiro, ou o número máximo permitido foi alcançado
                 //no segundo caso, o comportamento do programa é indefinido
                 if (flag != ',' || n_alcunhas == MAX_ALCUNHAS)
@@ -405,6 +409,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
             }
             //criação de uma planta nova com as informação lida do ficheiro
             nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
+            
             //libertação da memória em alocada no vetor,
             //para não provocar problemas de memória na próxima iteração do loop
             for (int i = 0; i < n_alcunhas; i++) {
