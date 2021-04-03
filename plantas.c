@@ -172,12 +172,16 @@ int qsort_key_nome(const void *a, const void *b) {
  * @return int 1 se ocorrer erro, senão retorna 0
  */
 int colecao_ordena(colecao *c, const char *tipo_ordem) {
+    int (*key_func)(const void *, const void *);
+
     if (!strcasecmp(tipo_ordem, "id"))
-        qsort(c->plantas, c->tamanho, sizeof(planta *), qsort_key_ID);
+        key_func = qsort_key_ID;
     else if (!strcasecmp(tipo_ordem, "nome"))
-        qsort(c->plantas, c->tamanho, sizeof(planta *), qsort_key_nome);
+        key_func = qsort_key_nome;
     else
         return -1;
+
+    qsort(c->plantas, c->tamanho, sizeof(planta *), key_func);
 
     return 0;
 }
