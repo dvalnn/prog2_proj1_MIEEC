@@ -250,7 +250,7 @@ int planta_atualiza(planta *old, planta *new) {
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes) {
     //validação dos argumentos passados para a função
-    if (strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
+    if (!id || !nome_científico || strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
         printf("\n[ERRO] - Argumentos inválidos.\n");
         return NULL;
     }
@@ -287,7 +287,7 @@ planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas
 
 colecao *colecao_nova(const char *tipo_ordem) {
     //verificação da validade do argumento passado
-    if (!strcasecmp(tipo_ordem, "id") && !strcasecmp(tipo_ordem, "nome")) {
+    if (!tipo_ordem || (!strcasecmp(tipo_ordem, "id") && !strcasecmp(tipo_ordem, "nome"))) {
         printf("\n[ERRO] - Argumento inválido.\n");
         return NULL;
     }
@@ -306,7 +306,7 @@ colecao *colecao_nova(const char *tipo_ordem) {
 }
 
 int planta_insere(colecao *c, planta *p) {
-    if (!p)
+    if (!c || !p)
         return -1;
 
     // caso especial: a coleção está vazia
@@ -357,9 +357,14 @@ int colecao_tamanho(colecao *c) {
 }
 
 colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
+    if (!nome_ficheiro || !tipo_ordem){
+        printf("\n[ERRO] - Argumento inválido.\n");
+        return NULL;
+    }
+           
     FILE *file;
     file = fopen(nome_ficheiro, "r");
-    if (file == NULL)
+    if (!file)
         return NULL;
 
     //declaração e inicialização de variáveis auxiliares
@@ -440,7 +445,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
 }
 
 planta *planta_remove(colecao *c, const char *nomep) {
-    if (!c)
+    if (!c || !nomep)
         return NULL;
 
     int pos = 0;
@@ -515,7 +520,7 @@ int colecao_apaga(colecao *c) {
 }
 
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam) {
-    if (!c)
+    if (!c || !nomep)
         return NULL;
     //alocar memória para o vetor para guardar as posições encontradas
     int *posicoes = calloc(c->tamanho, sizeof(*posicoes));
@@ -548,7 +553,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam) {
 }
 
 int colecao_reordena(colecao *c, const char *tipo_ordem) {
-    if (!c)
+    if (!c || !tipo_ordem)
         return -1;
 
     if (strcasecmp(tipo_ordem, "id") != 0 && strcasecmp(tipo_ordem, "nome") != 0)
