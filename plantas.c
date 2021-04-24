@@ -44,7 +44,7 @@
  * @param tipo_pesquisa flag para o tipo de pesquisa a ser feita
  * @return int posição do elemento encontrado ou -1 caso não exista
  */
-int binSearch(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
+int colecao_bin_search(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
     int lower = 0;                      // limite inferior do vetor
     int upper = haystack->tamanho - 1;  // limite superior do vetor
     int current;
@@ -81,7 +81,7 @@ int binSearch(const colecao *haystack, const char *needle, const char tipo_pesqu
  * @param tipo_pesquisa 0 para pesquisar por ID, 1 para pesquisar por nome
  * @return int posição do planta encontrada ou -1 caso não exista
  */
-int lSearch(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
+int colecao_lin_search(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
     for (int i = 0; i < haystack->tamanho; i++) {
         if (tipo_pesquisa == PESQUISA_NOME) {
             if (!strcmp(haystack->plantas[i]->nome_cientifico, needle))
@@ -112,9 +112,9 @@ int colecao_pesquisa(const colecao *haystack, const char *needle, const char tip
 
     //caso os tipos de ordenação coincidam, utilizar pesquisa binária, senão pesquisa linear
     if (sorted)
-        return binSearch(haystack, needle, tipo_pesquisa);
+        return colecao_bin_search(haystack, needle, tipo_pesquisa);
     else
-        return lSearch(haystack, needle, tipo_pesquisa);
+        return colecao_lin_search(haystack, needle, tipo_pesquisa);
 }
 
 /**
@@ -125,7 +125,7 @@ int colecao_pesquisa(const colecao *haystack, const char *needle, const char tip
  * @param ptrName nome do ptr a imprimir com a mensagem de erro
  * @return int 1 se ocorrer um erro, senão retorna 0
  */
-int checkPtr(void *ptr, const char *msg, const char *ptrName) {
+int check_ptr(void *ptr, const char *msg, const char *ptrName) {
     if (!ptr) {
         printf("%s", msg);
         printf("\n[INFO] - Erro originado por: \"%s\"\n", ptrName);
@@ -141,7 +141,7 @@ int checkPtr(void *ptr, const char *msg, const char *ptrName) {
  * @param b planta "b" a ser comparada
  * @return strcmp(a, b)
  */
-int qsortKey_ID(const void *a, const void *b) {
+int qsort_key_ID(const void *a, const void *b) {
     //cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
     const planta *pa = *(planta **)a;
     const planta *pb = *(planta **)b;
@@ -156,7 +156,7 @@ int qsortKey_ID(const void *a, const void *b) {
  * @param b planta "b" a ser comparada
  * @return strcmp(a, b)
  */
-int qsortKey_nome(const void *a, const void *b) {
+int qsort_key_nome(const void *a, const void *b) {
     //cast dos pointers void* para planta** e de seguida desreferenciação para planta*, de modo a poder aceder aos dados corretamente
     const planta *pa = *(planta **)a;
     const planta *pb = *(planta **)b;
@@ -172,12 +172,16 @@ int qsortKey_nome(const void *a, const void *b) {
  * @return int 1 se ocorrer erro, senão retorna 0
  */
 int colecao_ordena(colecao *c, const char *tipo_ordem) {
+    int (*key_func)(const void *, const void *);
+
     if (!strcasecmp(tipo_ordem, "id"))
-        qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_ID);
+        key_func = qsort_key_ID;
     else if (!strcasecmp(tipo_ordem, "nome"))
-        qsort(c->plantas, c->tamanho, sizeof(planta *), qsortKey_nome);
+        key_func = qsort_key_nome;
     else
         return -1;
+
+    qsort(c->plantas, c->tamanho, sizeof(planta *), key_func);
 
     return 0;
 }
@@ -206,29 +210,30 @@ int planta_atualiza(planta *old, planta *new) {
     //atualizar numero de sementes
     old->n_sementes += new->n_sementes;
 
+    //caso não existam novas alcunhas não é necessário fazer mais nada
     if (!new->n_alcunhas)
         return 1;
 
     //alocar espaço no vetor alcunhas para os novos char*, é alocado espaço em excesso para facilitar a atualização
     old->alcunhas = (char **)realloc(old->alcunhas, sizeof(old->alcunhas) * (old->n_alcunhas + new->n_alcunhas));
-    if (checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
+    if (check_ptr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
         return -1;
 
     //precorrer o vetor com as novas alcunhas
     for (int i = 0; i < new->n_alcunhas; i++) {
-        int novaAlcunha = TRUE;
+        int nova_alcunha = TRUE;
         for (int j = 0; j < old->n_alcunhas; j++) {
             //se a alcunha existir, flag = FALSE
             if (!strcmp(new->alcunhas[i], old->alcunhas[j])) {
-                novaAlcunha = FALSE;
+                nova_alcunha = FALSE;
                 break;
             }
         }
         //adicionar nova alcunha ao vetor
-        if (novaAlcunha) {
+        if (nova_alcunha) {
             old->alcunhas[old->n_alcunhas] = (char *)calloc(1, strlen(new->alcunhas[i]) + 1);
 
-            if (checkPtr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
+            if (check_ptr(old->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(old->alcunhas[i])))
                 return -1;
 
             strcpy(old->alcunhas[old->n_alcunhas], new->alcunhas[i]);
@@ -237,68 +242,70 @@ int planta_atualiza(planta *old, planta *new) {
     }
     //realocar o vetor com o tamanho certo
     old->alcunhas = (char **)realloc(old->alcunhas, sizeof(old->alcunhas) * old->n_alcunhas);
-    if (checkPtr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
+    if (check_ptr(old->alcunhas, MEMORY_ALOC_ERROR_MSG, str(old->alcunhas)))
         return -1;
 
     return 1;
 }
-
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes) {
     //validação dos argumentos passados para a função
-    if (strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
+    if (!ID || !nome_cientifico || strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
         printf("\n[ERRO] - Argumentos inválidos.\n");
         return NULL;
     }
 
     // aloca e inicializa a 0 espaço para 1 elemento do tamanho apontado por novaPlanta.
-    planta *novaPlanta = (planta *)calloc(1, sizeof(*novaPlanta));
+    planta *nova_planta = (planta *)calloc(1, sizeof(*nova_planta));
     // inicializa o vetor novaPlanta->alcunhas com tamanho 0 (NULL)
-    novaPlanta->alcunhas = NULL;
+    nova_planta->alcunhas = NULL;
 
-    strcpy(novaPlanta->ID, ID);
-    strcpy(novaPlanta->nome_cientifico, nome_cientifico);
-    novaPlanta->n_sementes = n_sementes;
-    novaPlanta->n_alcunhas = n_alcunhas;
+    strcpy(nova_planta->ID, ID);
+    strcpy(nova_planta->nome_cientifico, nome_cientifico);
+    nova_planta->n_sementes = n_sementes;
+    nova_planta->n_alcunhas = n_alcunhas;
 
     //Não existem alcunhas - retorna nova planta com novaPlanta->alcunhas = NULL
     if (!alcunhas || !n_alcunhas)
-        return novaPlanta;
+        return nova_planta;
     //existem alcunhas, aloca espaço para o vetor **alcunhas
-    novaPlanta->alcunhas = (char **)calloc(novaPlanta->n_alcunhas, sizeof(novaPlanta->alcunhas));
+    nova_planta->alcunhas = (char **)calloc(nova_planta->n_alcunhas, sizeof(nova_planta->alcunhas));
 
-    for (int i = 0; i < novaPlanta->n_alcunhas; i++) {
+    //precorrer as alcunhas dadas para inserir
+    for (int i = 0; i < nova_planta->n_alcunhas; i++) {
         if (!alcunhas[i])
             break;
-        novaPlanta->alcunhas[i] = (char *)calloc(1, (strlen(alcunhas[i]) + 1));
-        if (checkPtr(novaPlanta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(novaPlanta->alcunhas[i])))
+        //alocar espaço igual ao tamanho da string a ser inserida
+        nova_planta->alcunhas[i] = (char *)calloc(1, (strlen(alcunhas[i]) + 1));
+        if (check_ptr(nova_planta->alcunhas[i], MEMORY_ALOC_ERROR_MSG, str(nova_planta->alcunhas[i])))
             return NULL;
-        strcpy(novaPlanta->alcunhas[i], alcunhas[i]);
+        strcpy(nova_planta->alcunhas[i], alcunhas[i]);
     }
 
-    return novaPlanta;
+    return nova_planta;
 }
 
 colecao *colecao_nova(const char *tipo_ordem) {
-    if (!strcasecmp(tipo_ordem, "id") && !strcasecmp(tipo_ordem, "nome")) {
+    //verificação da validade do argumento passado
+    if (!tipo_ordem || (!strcasecmp(tipo_ordem, "id") && !strcasecmp(tipo_ordem, "nome"))) {
         printf("\n[ERRO] - Argumento inválido.\n");
         return NULL;
     }
-
-    colecao *newCol;
-    newCol = (colecao *)calloc(1, sizeof(*newCol));
-
-    if (checkPtr(newCol, MEMORY_ALOC_ERROR_MSG, str(newCol)))
+    //alocar de espaço para uma coleção vazia
+    colecao *new_col;
+    new_col = (colecao *)calloc(1, sizeof(*new_col));
+    //verificar se a alocação foi bem sucedida
+    if (check_ptr(new_col, MEMORY_ALOC_ERROR_MSG, str(new_col)))
         return NULL;
+    //inicialização do vetor plantas a NULL, visto que a coleção está vazia
+    new_col->plantas = NULL;
+    new_col->tamanho = 0;
+    strcpy(new_col->tipo_ordem, tipo_ordem);
 
-    newCol->plantas = NULL;
-    newCol->tamanho = 0;
-    strcpy(newCol->tipo_ordem, tipo_ordem);
-
-    return newCol;
+    return new_col;
 }
 
 int planta_insere(colecao *c, planta *p) {
-    if (!p)
+    if (!c || !p)
         return -1;
 
     // caso especial: a coleção está vazia
@@ -306,14 +313,14 @@ int planta_insere(colecao *c, planta *p) {
         c->tamanho = 1;
         c->plantas = (planta **)calloc(1, sizeof(c->plantas));
 
-        if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
+        if (check_ptr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
             return -1;
 
         c->plantas[0] = p;
         return 0;
     }
     //verificar a existência da planta.
-    //strcasecmp utilizados para verificar qual o tipo de ordenação da coleção e chamar coleção_pesquisa 
+    //strcasecmp utilizados para verificar qual o tipo de ordenação da coleção e chamar coleção_pesquisa
     //com o método de pesquisa mais rápido
     int pos = 0;
     if (!strcasecmp(c->tipo_ordem, "id"))
@@ -328,7 +335,7 @@ int planta_insere(colecao *c, planta *p) {
     //planta nao existe, é necessário inserir no final e reordenar o vetor.
     //alocar memória para vetor com 1 elemento extra
     c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho + 1));
-    if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
+    if (check_ptr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
         return -1;
 
     c->plantas[c->tamanho] = p;
@@ -358,7 +365,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
 
     //criação de uma nova coleção vazia
     colecao *importada = colecao_nova(tipo_ordem);
-    if (checkPtr(importada, COLECAO_CREATION_ERROR_MSG, str(colecao))) {
+    if (check_ptr(importada, COLECAO_CREATION_ERROR_MSG, str(colecao))) {
         fclose(file);
         file = NULL;
         return NULL;
@@ -406,7 +413,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
         } else
             nova = planta_nova(id, nome, NULL, n_alcunhas, n_sementes);
 
-        if (checkPtr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
+        if (check_ptr(nova, PLANTA_CREATION_ERROR_MSG, str(planta * nova)))
             printf("\n[INFO] planta %s %s na linha %d do ficheiro %s não foi criada nem inserida no vetor com sucesso\n", id, nome, linha, nome_ficheiro);
         else {
             //planta criada é inserida na coleção, caso seja repetida a planta antiga é atualizada e a nova é apagada
@@ -453,7 +460,7 @@ planta *planta_remove(colecao *c, const char *nomep) {
 
     //realoca o espaço do vetor para 1 elemento a menos;
     c->plantas = (planta **)realloc(c->plantas, sizeof(c->plantas) * (c->tamanho));
-    if (checkPtr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
+    if (check_ptr(c->plantas, MEMORY_ALOC_ERROR_MSG, str(c->plantas)))
         return NULL;
 
     //caso a planta não tenha sido da última ou da penúltima posição do vetor, é necessário reordenar
