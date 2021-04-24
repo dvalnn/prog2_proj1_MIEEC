@@ -384,8 +384,6 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
     char flag;
     int linha = 0;
     int n_alcunhas;
-    //vetor auxiliar para usar com scanf
-    char aux[MAX_NAME / 2] = {0};
 
     //alocar memória para vetor alcunhas auxiliar para guardar as alcunhas lidas -- vetor alocado para o máximo definido de alcunhas
     //para reduzir a quantidade total de operações de alocação de memória
@@ -402,9 +400,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
         if (flag == ',') {
             // >= 1 em vez de == 2, caso não haja \n ou espaço após o valor final do ficheiro
             // nesta situação fscanf recebe EOF após ler a alcunha de modo que retorna 1 em vez de 2
-            while (fscanf(file, "%99[^,\n]%c", aux, &flag) >= 1) {
-                alcunhas[n_alcunhas] = (char *)calloc(1, strlen(aux) + 1);
-                strcpy(alcunhas[n_alcunhas], aux);
+            while (fscanf(file, "%99m[^,\n]%c", &alcunhas[n_alcunhas], &flag) >= 1) {
                 n_alcunhas++;
 
                 //não há mais alcunhas a ler no ficheiro, ou o número máximo permitido foi alcançado
