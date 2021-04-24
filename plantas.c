@@ -250,7 +250,7 @@ int planta_atualiza(planta *old, planta *new) {
 
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes) {
     //validação dos argumentos passados para a função
-    if (!id || !nome_científico || strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
+    if (!ID || !nome_cientifico || strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
         printf("\n[ERRO] - Argumentos inválidos.\n");
         return NULL;
     }
