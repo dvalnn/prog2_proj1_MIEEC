@@ -101,20 +101,21 @@ int colecao_lin_search(const colecao *haystack, const char *needle, const char t
  * @return int posição do planta encontrada ou -1 caso não exista
  */
 int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
-    char sorted = FALSE;
+    //criação de um function pointer para seletção da função de pesquisa
+    //por default, o método de pesquisa a usar é pesquisa linear
+    int (*pesquisa_func)(const colecao *haystack, const char *needle, const char tipo_pesquisa);
+    pesquisa_func = colecao_lin_search;
 
     //verificação de se o tipo de ordenação coincide com o tipo de pesquisa desejado
     if (tipo_pesquisa == PESQUISA_ID) {
         if (!strcasecmp(haystack->tipo_ordem, "id"))
-            sorted = TRUE;
+            pesquisa_func = colecao_bin_search;
+    
     } else if (!strcasecmp(haystack->tipo_ordem, "nome"))
-        sorted = TRUE;
+        pesquisa_func = colecao_bin_search;
 
-    //caso os tipos de ordenação coincidam, utilizar pesquisa binária, senão pesquisa linear
-    if (sorted)
-        return colecao_bin_search(haystack, needle, tipo_pesquisa);
-    else
-        return colecao_lin_search(haystack, needle, tipo_pesquisa);
+    //pesquisa a coleção com o método de pesquisa adequado
+    return pesquisa_func(haystack, needle, tipo_pesquisa);
 }
 
 /**
@@ -353,11 +354,11 @@ int colecao_tamanho(colecao *c) {
 }
 
 colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
-    if (!nome_ficheiro || !tipo_ordem){
+    if (!nome_ficheiro || !tipo_ordem) {
         printf("\n[ERRO] - Argumento inválido.\n");
         return NULL;
     }
-           
+
     FILE *file;
     file = fopen(nome_ficheiro, "r");
     if (!file)
@@ -406,7 +407,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
             }
             //criação de uma planta nova com as informação lida do ficheiro
             nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
-            
+
             //libertação da memória em alocada no vetor,
             //para não provocar problemas de memória na próxima iteração do loop
             for (int i = 0; i < n_alcunhas; i++) {
