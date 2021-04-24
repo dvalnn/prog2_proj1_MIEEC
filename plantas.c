@@ -353,9 +353,14 @@ int colecao_tamanho(colecao *c) {
 }
 
 colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
+    if (!nome_ficheiro || !tipo_ordem){
+        printf("\n[ERRO] - Argumento inválido.\n");
+        return NULL;
+    }
+           
     FILE *file;
     file = fopen(nome_ficheiro, "r");
-    if (file == NULL)
+    if (!file)
         return NULL;
 
     //declaração e inicialização de variáveis auxiliares
@@ -375,8 +380,6 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
     char flag;
     int linha = 0;
     int n_alcunhas;
-    //vetor auxiliar para usar com scanf
-    char aux[MAX_NAME / 2] = {0};
 
     //alocar memória para vetor alcunhas auxiliar para guardar as alcunhas lidas -- vetor alocado para o máximo definido de alcunhas
     //para reduzir a quantidade total de operações de alocação de memória
@@ -393,10 +396,9 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
         if (flag == ',') {
             // >= 1 em vez de == 2, caso não haja \n ou espaço após o valor final do ficheiro
             // nesta situação fscanf recebe EOF após ler a alcunha de modo que retorna 1 em vez de 2
-            while (fscanf(file, "%99[^,\n]%c", aux, &flag) >= 1) {
-                alcunhas[n_alcunhas] = (char *)calloc(1, strlen(aux) + 1);
-                strcpy(alcunhas[n_alcunhas], aux);
+            while (fscanf(file, "%99m[^,\n]%c", &alcunhas[n_alcunhas], &flag) >= 1) {
                 n_alcunhas++;
+
                 //não há mais alcunhas a ler no ficheiro, ou o número máximo permitido foi alcançado
                 //no segundo caso, o comportamento do programa é indefinido
                 if (flag != ',' || n_alcunhas == MAX_ALCUNHAS)
@@ -404,6 +406,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
             }
             //criação de uma planta nova com as informação lida do ficheiro
             nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
+            
             //libertação da memória em alocada no vetor,
             //para não provocar problemas de memória na próxima iteração do loop
             for (int i = 0; i < n_alcunhas; i++) {
@@ -434,7 +437,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
 }
 
 planta *planta_remove(colecao *c, const char *nomep) {
-    if (!c)
+    if (!c || !nomep)
         return NULL;
 
     int pos = 0;
@@ -509,7 +512,7 @@ int colecao_apaga(colecao *c) {
 }
 
 int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam) {
-    if (!c)
+    if (!c || !nomep)
         return NULL;
     //alocar memória para o vetor para guardar as posições encontradas
     int *posicoes = calloc(c->tamanho, sizeof(*posicoes));
@@ -542,7 +545,7 @@ int *colecao_pesquisa_nome(colecao *c, const char *nomep, int *tam) {
 }
 
 int colecao_reordena(colecao *c, const char *tipo_ordem) {
-    if (!c)
+    if (!c || !tipo_ordem)
         return -1;
 
     if (strcasecmp(tipo_ordem, "id") != 0 && strcasecmp(tipo_ordem, "nome") != 0)
