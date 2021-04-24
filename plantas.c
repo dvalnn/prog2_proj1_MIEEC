@@ -101,20 +101,21 @@ int colecao_lin_search(const colecao *haystack, const char *needle, const char t
  * @return int posição do planta encontrada ou -1 caso não exista
  */
 int colecao_pesquisa(const colecao *haystack, const char *needle, const char tipo_pesquisa) {
-    char sorted = FALSE;
+    //criação de um function pointer para seletção da função de pesquisa
+    //por default, o método de pesquisa a usar é pesquisa linear
+    int (*pesquisa_func)(const colecao *haystack, const char *needle, const char tipo_pesquisa);
+    pesquisa_func = colecao_lin_search;
 
     //verificação de se o tipo de ordenação coincide com o tipo de pesquisa desejado
     if (tipo_pesquisa == PESQUISA_ID) {
         if (!strcasecmp(haystack->tipo_ordem, "id"))
-            sorted = TRUE;
+            pesquisa_func = colecao_bin_search;
+    
     } else if (!strcasecmp(haystack->tipo_ordem, "nome"))
-        sorted = TRUE;
+        pesquisa_func = colecao_bin_search;
 
-    //caso os tipos de ordenação coincidam, utilizar pesquisa binária, senão pesquisa linear
-    if (sorted)
-        return colecao_bin_search(haystack, needle, tipo_pesquisa);
-    else
-        return colecao_lin_search(haystack, needle, tipo_pesquisa);
+    //pesquisa a coleção com o método de pesquisa adequado
+    return pesquisa_func(haystack, needle, tipo_pesquisa);
 }
 
 /**
@@ -247,7 +248,6 @@ int planta_atualiza(planta *old, planta *new) {
 
     return 1;
 }
-
 planta *planta_nova(const char *ID, const char *nome_cientifico, char **alcunhas, int n_alcunhas, int n_sementes) {
     //validação dos argumentos passados para a função
     if (!ID || !nome_cientifico || strlen(ID) >= 10 || strlen(nome_cientifico) >= MAX_NAME || n_alcunhas < 0 || n_sementes < 0) {
@@ -324,14 +324,11 @@ int planta_insere(colecao *c, planta *p) {
     //strcasecmp utilizados para verificar qual o tipo de ordenação da coleção e chamar coleção_pesquisa
     //com o método de pesquisa mais rápido
     int pos = 0;
-    int search_param;
-
     if (!strcasecmp(c->tipo_ordem, "id"))
-        search_param = PESQUISA_ID;
+        pos = colecao_pesquisa(c, p->ID, PESQUISA_ID);
     else
-        search_param = PESQUISA_NOME;
+        pos = colecao_pesquisa(c, p->nome_cientifico, PESQUISA_NOME);
 
-    pos = colecao_pesquisa(c, p->ID, search_param);
     // planta existe, só necessita de ser atualizada.
     if (pos != -1)
         return planta_atualiza(c->plantas[pos], p);
@@ -357,11 +354,11 @@ int colecao_tamanho(colecao *c) {
 }
 
 colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
-    if (!nome_ficheiro || !tipo_ordem){
+    if (!nome_ficheiro || !tipo_ordem) {
         printf("\n[ERRO] - Argumento inválido.\n");
         return NULL;
     }
-           
+
     FILE *file;
     file = fopen(nome_ficheiro, "r");
     if (!file)
@@ -410,7 +407,7 @@ colecao *colecao_importa(const char *nome_ficheiro, const char *tipo_ordem) {
             }
             //criação de uma planta nova com as informação lida do ficheiro
             nova = planta_nova(id, nome, alcunhas, n_alcunhas, n_sementes);
-            
+
             //libertação da memória em alocada no vetor,
             //para não provocar problemas de memória na próxima iteração do loop
             for (int i = 0; i < n_alcunhas; i++) {
